@@ -65,27 +65,27 @@ type KeycloakUserInfo struct {
 func getKeycloakUserInfo(accessToken string, auth core.OAuth) (*KeycloakUserInfo, error) {
     client := &http.Client{}
 
-        req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, auth.KeycloakEndpointUserInfo, nil)
-        if err != nil {
-                return nil, fmt.Errorf("failed to create user info request: %w", err)
-        }
+    req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, auth.KeycloakEndpointUserInfo, nil)
+    if err != nil {
+            return nil, fmt.Errorf("failed to create user info request: %w", err)
+    }
 
-        req.Header.Add("Authorization", "Bearer "+accessToken)
+    req.Header.Add("Authorization", "Bearer "+accessToken)
 
-        resp, err := client.Do(req)
-        if err != nil {
-                return nil, fmt.Errorf("failed to get user info: %w", err)
-        }
-        defer resp.Body.Close()
+    resp, err := client.Do(req)
+    if err != nil {
+            return nil, fmt.Errorf("failed to get user info: %w", err)
+    }
+    defer resp.Body.Close()
 
-        if resp.StatusCode != http.StatusOK {
-                return nil, fmt.Errorf("user info request returned non-200 status: %d", resp.StatusCode)
-        }
+    if resp.StatusCode != http.StatusOK {
+            return nil, fmt.Errorf("user info request returned non-200 status: %d", resp.StatusCode)
+    }
 
-        var userInfo KeycloakUserInfo
-        if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
-                return nil, fmt.Errorf("failed to decode user info JSON: %w", err)
-        }
+    var userInfo KeycloakUserInfo
+    if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
+            return nil, fmt.Errorf("failed to decode user info JSON: %w", err)
+    }
 
-        return &userInfo, nil
+    return &userInfo, nil
 }
