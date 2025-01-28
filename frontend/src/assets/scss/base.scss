@@ -112,8 +112,9 @@
 
 .divider {
   flex-grow: 1;
-  border-bottom: 1px solid rgba(0,0,0,0.1);
-  margin: 0 20px 0 20px;
+  border-bottom: 1px solid $medium_grey;
+  // custom
+  margin: 0 8px 0 8px;
 }
 
 .daily-failures {
@@ -230,11 +231,13 @@
   }
 
   .font-2 {
-    font-size: 0.8rem;
+    // custom
+    font-size: 0.875rem;
   }
 
 .font-3 {
-  font-size: 1.1rem;
+  // custom
+  font-size: 1rem;
 }
 
 .font-4 {

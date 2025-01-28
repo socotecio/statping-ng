@@ -39,7 +39,8 @@ A {
 }
 
 .text-muted {
-  color: lighten($text-color, 30%) !important;
+  // custom
+  color: $expert-blue !important;
 }
 
 .text-outage {
@@ -144,7 +145,11 @@ A {
 
 .list-group-item {
   min-height: 85pt;
-  background-color: $group-list-background;
+  background-color: $surface_grey;
+  padding: 24px;
+  // custom
+  border: 1px solid $medium_grey;
+  border-radius: 4px;
 }
 
 .list-group-item:HOVER {
@@ -159,7 +164,7 @@ A {
 }
 
 .list-group-item A {
-  color: $group-list-title;
+  color: $expert-blue;
 }
 
 .chart_list_tooltip {
