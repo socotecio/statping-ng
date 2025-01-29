@@ -26,6 +26,11 @@ func LoadConfigForm(r *http.Request) (*DbConfig, error) {
 	email := g("email")
 	language := g("language")
 	reports, _ := strconv.ParseBool(g("send_reports"))
+	keycloakClientID := g("keycloak_client_id")
+	keycloakClientSecret := g("keycloak_client_secret")
+	keycloakEndpointAuth := g("keycloak_endpoint_auth")
+	keycloakEndpointToken := g("keycloak_endpoint_token")
+	keycloakEndpointUserinfo := g("keycloak_endpoint_userinfo")
 
 	if project == "" || username == "" || password == "" {
 		err := errors.New("Missing required elements on setup form")
@@ -46,6 +51,11 @@ func LoadConfigForm(r *http.Request) (*DbConfig, error) {
 	p.Set("ADMIN_USER", username)
 	p.Set("ADMIN_PASSWORD", password)
 	p.Set("ADMIN_EMAIL", email)
+	p.Set("KEYCLOAK_CLIENT_ID", keycloakClientID)
+	p.Set("KEYCLOAK_CLIENT_SECRET", keycloakClientSecret)
+	p.Set("KEYCLOAK_ENDPOINT_AUTH", keycloakEndpointAuth)
+	p.Set("KEYCLOAK_ENDPOINT_TOKEN", keycloakEndpointToken)
+	p.Set("KEYCLOAK_ENDPOINT_USERINFO", keycloakEndpointUserinfo)
 
 	confg := &DbConfig{
 		DbConn:       dbConn,
@@ -63,6 +73,11 @@ func LoadConfigForm(r *http.Request) (*DbConfig, error) {
 		Location:     utils.Directory,
 		Language:     language,
 		AllowReports: reports,
+		KeycloakClientID:     	   keycloakClientID,
+		KeycloakClientSecret: 	   keycloakClientSecret,
+		KeycloakEndpointAuth:      keycloakEndpointAuth,
+		KeycloakEndpointToken:     keycloakEndpointToken,
+		KeycloakEndpointUserinfo:  keycloakEndpointUserinfo,
 	}
 
 	return confg, nil
