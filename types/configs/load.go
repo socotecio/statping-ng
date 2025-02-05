@@ -40,6 +40,7 @@ func Save() error {
 		KeycloakEndpointToken:     p.GetString("KEYCLOAK_ENDPOINT_TOKEN"),
 		KeycloakEndpointUserinfo:  p.GetString("KEYCLOAK_ENDPOINT_USERINFO"),
 		KeycloakScopes:       	   p.GetString("KEYCLOAK_SCOPES"),
+		KeycloakIsOpenID:          p.GetBool("KEYCLOAK_IS_OPEN_ID"),
 	}
 	return configs.Save(utils.Directory)
 }
@@ -126,6 +127,9 @@ func LoadConfigs(cfgFile string) (*DbConfig, error) {
 	if db.KeycloakScopes != "" {
 		p.Set("KEYCLOAK_SCOPES", db.KeycloakScopes)
 	}
+	if db.KeycloakIsOpenID != "" {
+		p.Set("KEYCLOAK_IS_OPEN_ID", db.KeycloakIsOpenID)
+	}
 
 	configs := &DbConfig{
 		DbConn:            p.GetString("DB_CONN"),
@@ -155,6 +159,7 @@ func LoadConfigs(cfgFile string) (*DbConfig, error) {
 		KeycloakEndpointToken:     p.GetString("KEYCLOAK_ENDPOINT_TOKEN"),
 		KeycloakEndpointUserinfo:  p.GetString("KEYCLOAK_ENDPOINT_USERINFO"),
 		KeycloakScopes:            p.GetString("KEYCLOAK_SCOPES"),
+		KeycloakIsOpenID:          p.GetBool("KEYCLOAK_IS_OPEN_ID"),
 	}
 	log.WithFields(utils.ToFields(configs)).Debugln("read config file: " + cfgFile)
 

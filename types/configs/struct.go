@@ -55,7 +55,7 @@ type DbConfig struct {
 	KeycloakEndpointToken     string `yaml:"keycloak_endpoint_token,omitempty" json:"keycloak_endpoint_token"`
 	KeycloakEndpointUserinfo  string `yaml:"keycloak_endpoint_userinfo,omitempty" json:"keycloak_endpoint_userinfo"`
 	KeycloakScopes            string `yaml:"keycloak_scopes,omitempty" json:"keycloak_scopes"`
-	KeycloakIsOpenID          bool   `yaml:"keycloak_open_id,omitempty" json:"keycloak_open_id"`
+	KeycloakIsOpenID          bool   `yaml:"keycloak_is_open_id,omitempty" json:"keycloak_is_open_id"`
 
 	Db database.Database `yaml:"-" json:"-"`
 }

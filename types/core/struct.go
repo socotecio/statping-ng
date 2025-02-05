@@ -70,7 +70,7 @@ type OAuth struct {
 	KeycloakEndpointToken     string        `gorm:"column:keycloak_endpoint_token" json:"keycloak_endpoint_token"`
 	KeycloakEndpointUserinfo  string        `gorm:"column:keycloak_endpoint_userinfo" json:"keycloak_endpoint_userinfo"`
 	KeycloakScopes       	  string        `gorm:"column:keycloak_scopes" json:"keycloak_scopes"`
-	KeycloakIsOpenID     	  null.NullBool `gorm:"column:keycloak_open_id" json:"keycloak_open_id"`
+	KeycloakIsOpenID     	  null.NullBool `gorm:"column:keycloak_is_open_id" json:"keycloak_is_open_id"`
 }
 
 // AllNotifiers contains all the Notifiers loaded

@@ -209,8 +209,8 @@
                 <div class="form-group row">
                     <label for="switch-keycloak-open-id" class="col-sm-4 col-form-label">Open ID</label>
                     <div class="col-sm-8">
-                        <span @click="oauth.keycloak_open_id = !!oauth.keycloak_open_id" class="switch switch-rd-gr float-right">
-                            <input v-model="oauth.keycloak_open_id" type="checkbox" id="switch-keycloak-open-id" :checked="oauth.keycloak_open_id">
+                        <span @click="oauth.keycloak_is_open_id = !!oauth.keycloak_is_open_id" class="switch switch-rd-gr float-right">
+                            <input v-model="oauth.keycloak_is_open_id" type="checkbox" id="switch-keycloak-open-id" :checked="oauth.keycloak_is_open_id">
                             <label for="switch-keycloak-open-id" class="mb-0"> </label>
                         </span>
                         <small>Enable if provider is OpenID</small>
@@ -362,7 +362,7 @@
               keycloak_endpoint_token: "",
               keycloak_endpoint_userinfo: "",
               keycloak_scopes: '',
-              keycloak_open_id: false,
+              keycloak_is_open_id: false,
             }
           }
       },

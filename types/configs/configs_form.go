@@ -31,6 +31,8 @@ func LoadConfigForm(r *http.Request) (*DbConfig, error) {
 	keycloakEndpointAuth := g("keycloak_endpoint_auth")
 	keycloakEndpointToken := g("keycloak_endpoint_token")
 	keycloakEndpointUserinfo := g("keycloak_endpoint_userinfo")
+	keycloakScopes := g("keycloak_scopes")
+	keycloakIsOpenID, _ := strconv.ParseBool(g("keycloak_is_open_id"))
 
 	if project == "" || username == "" || password == "" {
 		err := errors.New("Missing required elements on setup form")
@@ -56,6 +58,8 @@ func LoadConfigForm(r *http.Request) (*DbConfig, error) {
 	p.Set("KEYCLOAK_ENDPOINT_AUTH", keycloakEndpointAuth)
 	p.Set("KEYCLOAK_ENDPOINT_TOKEN", keycloakEndpointToken)
 	p.Set("KEYCLOAK_ENDPOINT_USERINFO", keycloakEndpointUserinfo)
+	p.Set("KEYCLOAK_SCOPES", keycloakScopes)
+	p.Set("KEYCLOAK_IS_OPEN_ID", keycloakIsOpenID)
 
 	confg := &DbConfig{
 		DbConn:       dbConn,
@@ -78,6 +82,8 @@ func LoadConfigForm(r *http.Request) (*DbConfig, error) {
 		KeycloakEndpointAuth:      keycloakEndpointAuth,
 		KeycloakEndpointToken:     keycloakEndpointToken,
 		KeycloakEndpointUserinfo:  keycloakEndpointUserinfo,
+		KeycloakScopes:  		   keycloakScopes,
+		KeycloakIsOpenID:  		   keycloakIsOpenID,
 	}
 
 	return confg, nil

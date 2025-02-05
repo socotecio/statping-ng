@@ -65,8 +65,7 @@ func InitEnvs() {
 	Params.SetDefault("KEYCLOAK_ENDPOINT_TOKEN", "")
 	Params.SetDefault("KEYCLOAK_ENDPOINT_USERINFO", "")
 	Params.SetDefault("KEYCLOAK_SCOPES", "openid,profile,email")
-	Params.SetDefault("KEYCLOAK_OPEN_ID", false)
-	Params.SetDefault("KEYCLOAK_CALLBACK_URL", "")
+	Params.SetDefault("KEYCLOAK_IS_OPEN_ID", false)
 
 	dbConn := Params.GetString("DB_CONN")
 	dbInt := Params.GetInt("DB_PORT")
