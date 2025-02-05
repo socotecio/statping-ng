@@ -127,7 +127,7 @@ func LoadConfigs(cfgFile string) (*DbConfig, error) {
 	if db.KeycloakScopes != "" {
 		p.Set("KEYCLOAK_SCOPES", db.KeycloakScopes)
 	}
-	if db.KeycloakIsOpenID != "" {
+	if db.KeycloakIsOpenID {
 		p.Set("KEYCLOAK_IS_OPEN_ID", db.KeycloakIsOpenID)
 	}
 
