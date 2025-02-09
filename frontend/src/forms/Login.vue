@@ -73,9 +73,23 @@
             slack_scope: "identity.email,identity.basic"
           }
       },
-    mounted() {
-      this.$cookies.remove("statping_auth")
-    },
+      async mounted() {
+        this.$cookies.remove("statping_auth")
+        // Ensure oauth data is loaded
+        try {
+          await Api.core()
+          const oauthData = await Api.oauth()
+          
+          if (!oauthData) {
+            console.error("OAuth data is null or undefined")
+          }
+
+          this.oauth = oauthData
+
+        } catch (error) {
+          console.error("Error loading OAuth data: ", error)
+        }
+      },
     methods: {
           checkForm() {
               if (!this.username || !this.password) {
@@ -114,17 +128,27 @@
         return ""
       },
       keycloak_scopes() {
-        let scopes = []
-        if (this.oauth.keycloak_is_open_id) {
-          scopes.push("openid")
+        let scopes = [];
+
+        // Add openid scope if needed
+        if (this.oauth.keycloak_is_open_id && !scopes.includes("openid")) {
+            scopes.push("openid");
         }
-        this.oauth.keycloak_scopes.split(",").forEach(scope => {
-          scopes.push(scope.trim());
-        });
+
+        // Add other scopes
+        if (this.oauth.keycloak_scopes) {
+            this.oauth.keycloak_scopes.split(",").forEach(scope => {
+                if (!scopes.includes(scope.trim())) {
+                    scopes.push(scope.trim());
+                }
+            });
+        }
+        
         if (scopes.length !== 0) {
-          return "&scope="+scopes.join(" ")
+            return "&scope=" + scopes.join(" ");
         }
-        return ""
+
+        return "";
       },
         GHlogin() {
             window.location = `https://github.com/login/oauth/authorize?client_id=${this.oauth.gh_client_id}&redirect_uri=${this.encode(this.core.domain+"/oauth/github")}&scope=read:user,read:org`
