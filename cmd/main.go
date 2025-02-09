@@ -10,11 +10,13 @@ import (
 	"github.com/statping-ng/statping-ng/types/configs"
 	"github.com/statping-ng/statping-ng/types/core"
 	"github.com/statping-ng/statping-ng/types/metrics"
+	"github.com/statping-ng/statping-ng/types/null"
 	"github.com/statping-ng/statping-ng/types/services"
 	"github.com/statping-ng/statping-ng/utils"
 	"os"
 	"os/signal"
 	"syscall"
+	"strconv"
 )
 
 var (
@@ -112,6 +114,8 @@ func start() {
 		exit(err)
 	}
 
+	InitKeycloakConfig()
+
 	if err := mainProcess(); err != nil {
 		exit(err)
 	}
@@ -165,4 +169,47 @@ func InitApp() error {
 	core.App.Setup = true
 	core.App.Started = utils.Now()
 	return nil
+}
+
+// Initialize Keycloak configuration from environment variables
+func InitKeycloakConfig() {
+	keycloakClientID := utils.Params.GetString("KEYCLOAK_CLIENT_ID")
+	keycloakClientSecret := utils.Params.GetString("KEYCLOAK_CLIENT_SECRET")
+	keycloakEndpointAuth := utils.Params.GetString("KEYCLOAK_ENDPOINT_AUTH")
+	keycloakEndpointToken := utils.Params.GetString("KEYCLOAK_ENDPOINT_TOKEN")
+	keycloakEndpointUserinfo := utils.Params.GetString("KEYCLOAK_ENDPOINT_USERINFO")
+	keycloakScopes := utils.Params.GetString("KEYCLOAK_SCOPES")
+	keycloakIsOpenID := utils.Params.GetString("KEYCLOAK_IS_OPEN_ID")
+	domain := utils.Params.GetString("DOMAIN")
+
+	if keycloakClientID != "" && keycloakClientSecret != "" {
+		core.App.OAuth.KeycloakClientID = keycloakClientID
+		core.App.OAuth.KeycloakClientSecret = keycloakClientSecret
+		core.App.OAuth.KeycloakEndpointAuth = keycloakEndpointAuth
+		core.App.OAuth.KeycloakEndpointToken = keycloakEndpointToken
+		core.App.OAuth.KeycloakEndpointUserinfo = keycloakEndpointUserinfo
+		core.App.OAuth.KeycloakScopes = keycloakScopes
+		core.App.Domain = domain
+		
+		// Convert the value of KEYCLOAK_IS_OPEN_ID to a boolean
+		if keycloakIsOpenID != "" {
+			isOpenID, err := strconv.ParseBool(keycloakIsOpenID) 
+			if err != nil {
+				log.Errorf("Invalid value for KEYCLOAK_IS_OPEN_ID: %v", err)
+				core.App.OAuth.KeycloakIsOpenID = null.NewNullBool(false)
+			} else {
+				core.App.OAuth.KeycloakIsOpenID = null.NewNullBool(isOpenID)
+			}
+		} else {
+			core.App.OAuth.KeycloakIsOpenID = null.NewNullBool(false)
+		}
+
+		if err := core.App.Create(); err != nil {
+			log.Errorf("Error saving Keycloak data to the database: %v", err)
+		} else {
+			log.Info("Keycloak configuration saved successfully.")
+		}
+	} else {
+		log.Warn("Missing Keycloak environment variables.")
+	}
 }

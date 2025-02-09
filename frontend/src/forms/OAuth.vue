@@ -203,7 +203,7 @@
                     <label for="keycloak_scopes" class="col-sm-4 col-form-label">Scopes</label>
                     <div class="col-sm-8">
                         <input v-model="oauth.keycloak_scopes" type="text" class="form-control" id="keycloak_scopes" placeholder="e.g. openid,profile,email">
-                        <small>Optional coma delimited list of keycloak scopes</small>
+                        <small>Optional comma delimited list of keycloak scopes</small>
                     </div>
                 </div>
                 <div class="form-group row">
@@ -367,13 +367,22 @@
           }
       },
     async mounted() {
-        this.oauth = await Api.oauth()
-      this.local_enabled = this.has('local')
-      this.github_enabled = this.has('github')
-      this.google_enabled = this.has('google')
-      this.slack_enabled = this.has('slack')
-      this.custom_enabled = this.has('custom')
-      this.keycloak_enabled = this.has('keycloak')
+      try {
+        const oauthData = await Api.oauth()
+        this.oauth = oauthData
+        this.local_enabled = this.has('local')
+        this.github_enabled = this.has('github')
+        this.google_enabled = this.has('google')
+        this.slack_enabled = this.has('slack')
+        this.custom_enabled = this.has('custom')
+        if (oauthData.keycloak_client_id && oauthData.keycloak_client_secret) {
+            this.keycloak_enabled = true;
+        } else {
+            this.keycloak_enabled = false;
+        }
+      } catch (error) {
+        console.error("Error loading OAuth data: ", error)
+      }
     },
     methods: {
       providers() {
