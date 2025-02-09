@@ -366,23 +366,22 @@
             }
           }
       },
-    async mounted() {
-      try {
-        const oauthData = await Api.oauth()
-        this.oauth = oauthData
-        this.local_enabled = this.has('local')
-        this.github_enabled = this.has('github')
-        this.google_enabled = this.has('google')
-        this.slack_enabled = this.has('slack')
-        this.custom_enabled = this.has('custom')
-        if (oauthData.keycloak_client_id && oauthData.keycloak_client_secret) {
-            this.keycloak_enabled = true;
-        } else {
-            this.keycloak_enabled = false;
+      async mounted() {
+        try {
+            const oauthData = await Api.oauth();
+            this.oauth = oauthData;
+
+            this.local_enabled = this.has('local');
+            this.github_enabled = this.has('github');
+            this.google_enabled = this.has('google');
+            this.slack_enabled = this.has('slack');
+            this.custom_enabled = this.has('custom');
+
+            this.keycloak_enabled = oauthData.keycloak_client_id && oauthData.keycloak_client_secret;
+
+        } catch (error) {
+            console.error("Error loading OAuth data: ", error);
         }
-      } catch (error) {
-        console.error("Error loading OAuth data: ", error)
-      }
     },
     methods: {
       providers() {

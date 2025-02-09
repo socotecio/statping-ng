@@ -137,18 +137,16 @@
 
         // Add other scopes
         if (this.oauth.keycloak_scopes) {
-            this.oauth.keycloak_scopes.split(",").forEach(scope => {
-                if (!scopes.includes(scope.trim())) {
-                    scopes.push(scope.trim());
-                }
-            });
-        }
-        
-        if (scopes.length !== 0) {
-            return "&scope=" + scopes.join(" ");
+          this.oauth.keycloak_scopes.split(",").forEach(scope => {
+            const trimmedScope = scope.trim();
+            if (trimmedScope && !scopes.includes(trimmedScope)) {
+              scopes.push(trimmedScope);
+            }
+          });
         }
 
-        return "";
+        // Return the scopes as a query string
+        return scopes.length > 0 ? `&scope=${scopes.join(" ")}` : "";
       },
         GHlogin() {
             window.location = `https://github.com/login/oauth/authorize?client_id=${this.oauth.gh_client_id}&redirect_uri=${this.encode(this.core.domain+"/oauth/github")}&scope=read:user,read:org`
