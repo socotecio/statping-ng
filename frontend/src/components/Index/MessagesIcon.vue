@@ -16,6 +16,9 @@ export default {
     },
     methods: {
         activeMessages(msgs) {
+            if (msgs == null) {
+                return 0
+            }
             return msgs.filter(m => this.isAfter(this.now(), m.start_on) && this.isBefore(this.now(), m.end_on)).length
         }
     }
