@@ -53,7 +53,7 @@ func oauthLogin(oauth *oAuth, w http.ResponseWriter, r *http.Request) {
 		Id:       0,
 		Username: oauth.Username,
 		Email:    oauth.Email,
-		Admin:    null.NewNullBool(false),
+		Admin:    null.NewNullBool(oauth.Admin),
 		OAuth:    null.NewNullBool(true),
 	}
 	log.Infoln(fmt.Sprintf("OAuth %s User %s logged in from IP %s", oauth.Type(), oauth.Email, r.RemoteAddr))

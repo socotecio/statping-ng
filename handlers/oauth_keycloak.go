@@ -57,11 +57,12 @@ func keycloakOAuth(r *http.Request) (*oAuth, error) {
 
 	// Check if the user has the 'admin' role
 	for _, role := range userInfo.Roles {
-		if role == "admin" {
+		if role == "statping-admin" {
 			isAdmin = true
 			break
 		}
 	}
+	log.Infoln("Keycloak user admin role:", isAdmin)
 
 	return &oAuth{
 		Email:    userInfo.Email,

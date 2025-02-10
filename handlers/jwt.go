@@ -28,6 +28,7 @@ func removeJwtToken(w http.ResponseWriter) {
 
 func setJwtToken(user *users.User, w http.ResponseWriter) (JwtClaim, string) {
 	expirationTime := time.Now().Add(72 * time.Hour)
+	log.Infoln("setting token for user.Admin: ", user.Admin)
 	jwtClaim := JwtClaim{
 		Username: user.Username,
 		Admin:    user.Admin.Bool,
