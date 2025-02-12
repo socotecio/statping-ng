@@ -3,7 +3,7 @@
 @import 'custom';
 
 HTML,BODY {
-  background-color: $background-color;
+  background-color: #F4F6FF;
   color: $text-color;
 }
 
@@ -39,7 +39,6 @@ A {
 }
 
 .text-muted {
-  // custom
   color: $expert-blue !important;
 }
 
@@ -133,15 +132,14 @@ A {
 
 .list-group-item {
   min-height: 85pt;
-  background-color: $surface_grey;
+  background-color: $surface_grey !important;
   padding: 24px;
-  // custom
   border: 1px solid $medium_grey;
   border-radius: 4px;
 }
 
 .list-group-item:HOVER {
-  background-color: lighten($group-list-background, 5%) !important;
+  background-color: $surface_grey !important;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px 1px;
   -webkit-transition-duration: 300ms;
   -moz-transition-duration: 300ms;
@@ -189,11 +187,11 @@ A {
 }
 
 .footer .statping {
-  color: lighten($footer-text-color, 10%);
+  color: $expert-blue !important;
   text-decoration: none;
 }
 .footer .statping:HOVER {
-  color: lighten($footer-text-color, 0%);
+  color: lighten($expert-blue, 0%);
   text-decoration: none;
 }
 
