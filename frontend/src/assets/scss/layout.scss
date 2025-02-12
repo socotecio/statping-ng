@@ -179,9 +179,10 @@ A {
 }
 
 .login_container {
-  border-radius: 5px;
-  box-shadow: 0 .5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  border-radius: 4px;
+  box-shadow: none !important;
   background-color: $container-color;
+  border: 1px solid $grey_regular;
 }
 
 .footer {

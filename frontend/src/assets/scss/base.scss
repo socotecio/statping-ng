@@ -222,7 +222,7 @@
 
   .lower_canvas SPAN {
     font-size: 1rem;
-    color: $service-description-color
+    color: $expert-blue;
   }
 
   .font-0 {
@@ -271,8 +271,12 @@
 }
 
   .badge {
+    min-height: 32px;
     border-radius: 4px;
     padding: 3px 8px;
+    text-transform: capitalize;
+    display: flex;
+    align-items: center;
   }
 
   .btn-group {
@@ -385,14 +389,12 @@
     background-color: $meadow_green_light !important;
     color: $meadow_green !important;
     border: 1px solid $meadow_green !important;
-    text-transform: lowercase;
   }
 
   .bg-danger {
     background-color: $cherry_red_light !important;
     color: $cherry_red !important;
     border: 1px solid $cherry_red !important;
-    text-transform: lowercase;
   }
 
   .bg-outage {

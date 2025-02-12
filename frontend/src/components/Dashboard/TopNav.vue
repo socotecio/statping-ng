@@ -1,6 +1,6 @@
 <template>
   <nav class="navbar navbar-expand-lg">
-      <router-link to="/" class="navbar-brand">Statping-ng</router-link>
+     <router-link class="links button" to="/">{{$t('go_to_dashboard')}}</router-link>
       <button @click="navopen = !navopen" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
           <font-awesome-icon v-if="!navopen" icon="bars"/>
           <font-awesome-icon v-if="navopen" icon="times"/>
@@ -31,7 +31,7 @@
             </li>
           </ul>
           <span class="navbar-text">
-    <a href="#" class="nav-link" @click.prevent="logout">{{ $t('logout') }}</a>
+    <a href="#" class="nav-link button" @click.prevent="logout">{{ $t('logout') }}</a>
   </span>
       </div>
   </nav>
