@@ -20,7 +20,7 @@
             <div class="row lower_canvas full-col-12 text-white" :class="badgeClass(service)">
                 <div class="col-md-10 col-6">
                     <div class="dropup" :class="{show: dropDownMenu}">
-                        <button style="font-size: 10pt;" @click.prevent="openMenu('timeframe')" type="button" class="col-4 float-left btn btn-sm float-right btn-block text-white dropdown-toggle service_scale pr-2">
+                        <button style="font-size: 10pt;" @click.prevent="openMenu('timeframe')" type="button" class="col-4 float-left btn btn-sm float-right btn-block dropdown-toggle service_scale pr-2">
                             {{timeframepick.text}}
                         </button>
                         <div class="service-tm-menu" :class="{'d-none': !dropDownMenu}">
@@ -29,7 +29,7 @@
                     </div>
 
                     <div class="dropup" :class="{show: intervalMenu}">
-                        <button style="font-size: 10pt;" @click.prevent="openMenu('interval')" type="button" class="col-4 float-left btn btn-sm float-right btn-block text-white dropdown-toggle service_scale pr-2">
+                        <button style="font-size: 10pt;" @click.prevent="openMenu('interval')" type="button" class="col-4 float-left btn btn-sm float-right btn-block dropdown-toggle service_scale pr-2">
                             {{intervalpick.text}}
                         </button>
                         <div class="service-tm-menu" :class="{'d-none': !intervalMenu}">
@@ -38,7 +38,7 @@
                             </a>
                         </div>
 
-                        <span class="d-none float-left d-md-inline">
+                        <span class="d-none float-left d-md-inline small-text">
                             {{smallText(service)}}
                         </span>
                     </div>
