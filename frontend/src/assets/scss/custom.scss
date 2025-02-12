@@ -45,12 +45,12 @@ $black_regular: #333333;
     color: $expert-blue;
 }
 
-.navbar-nav .router-link-active {
+.navbar-nav {
     color: $black_regular !important;
     padding: 13px 16px;
 }
 
-.navbar-nav .router-link-active:hover {
+.navbar-nav .router-link-active {
     background-color: #FFF8E6 !important;
     border-bottom: 4px solid #FCB902;
 }
