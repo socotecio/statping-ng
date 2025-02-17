@@ -31,7 +31,7 @@
             </li>
           </ul>
           <span class="navbar-text">
-    <a href="#" class="nav-link button" @click.prevent="logout">{{ $t('logout') }}</a>
+    <a href="#" class="nav-link button" @click.prevent="logout"><font-awesome-icon class="mr-2" :icon="['fas', 'sign-out-alt']" />{{ $t('logout') }}</a>
   </span>
       </div>
   </nav>
