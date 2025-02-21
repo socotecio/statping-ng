@@ -3,14 +3,14 @@
 /*    Index Page      */
 $background-color: #EAEAEA;
 $container-color: #ffffff;
-$text-color: #2a2a2a;
+$text-color: $expert-blue;
 $max-width: 1012px;
 $title-color: #4e4e4e;
 $description-color: #828282;
 $subtitle-color: #747474;
 $mobile-card-shadow: 2px 3px 10px #b7b7b7;
 
-$group-list-background: #fcfcfc;
+$group-list-background: $surface_grey;
 $group-list-title: #474747;
 $navbar-color: #1c1c1c;
 $navbar-background: #ffffff;
@@ -28,17 +28,17 @@ $card-shadow: 0px 3px 6px 1px rgba(0, 0, 0, 0.08);
 $service-title: #3e3e3e;
 $service-title-size: 1.8rem;
 $service-stats-color: #4f4f4f;
-$service-description-color: #fff;
+$service-description-color: $expert-blue;
 $service-stats-size: 2.3rem;
 $service-card-height: 480px;
 
 /*    Button Colors      */
-$success-color: #47d337;
-$danger-color: #dd3545;
+$success-color: $meadow_green_light;
+$danger-color: $cherry_red_light;
 $primary-color: #3e9bff;
 
 /*   Footer Settings   */
-$footer-text-color: #b0b0b0;
+$footer-text-color: $expert-blue;
 $nav-tab-color: #13a00d;
 $footer-display: block;
 

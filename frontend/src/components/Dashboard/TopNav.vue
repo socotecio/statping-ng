@@ -39,29 +39,29 @@
 </template>
 
 <script>
-import Api from "../../API"
+  import Api from "../../API"
 
-export default {
-name: 'TopNav',
-    data () {
-        return {
-            navopen: false
-        }
-    },
-  computed: {
-    admin() {
-      return this.$store.state.admin
-    }
-  },
-    methods: {
-      async logout () {
-        await Api.logout()
-        this.$store.commit('setHasAllData', false)
-        this.$store.commit('setToken', null)
-        this.$store.commit('setAdmin', false)
-        // this.$cookies.remove("statping_auth")
-        await this.$router.push('/logout')
+  export default {
+  name: 'TopNav',
+      data () {
+          return {
+              navopen: false
+          }
+      },
+    computed: {
+      admin() {
+        return this.$store.state.admin
       }
+    },
+      methods: {
+        async logout () {
+          await Api.logout()
+          this.$store.commit('setHasAllData', false)
+          this.$store.commit('setToken', null)
+          this.$store.commit('setAdmin', false)
+          // this.$cookies.remove("statping_auth")
+          await this.$router.push('/logout')
+        }
+    }
   }
-}
 </script>
