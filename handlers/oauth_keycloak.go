@@ -1,3 +1,12 @@
+// oauth_keycloak.go - Keycloak OAuth handler
+//
+// This handler relies on the proper configuration of the Keycloak client.
+// Ensure that the Keycloak client includes:
+// - A GroupToRoleMapper (Token mapper for group membership, priority 0)
+// - A User Realm Role mapper (roles-mapper, priority 40)
+// Also, create the `statping-admin` role and map it to the appropriate groups.
+// These configurations allow the userinfo token to include a roles array with 'statping-admin'.
+
 package handlers
 
 import (

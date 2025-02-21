@@ -171,7 +171,17 @@ func InitApp() error {
 	return nil
 }
 
-// Initialize Keycloak configuration from environment variables
+// Initialize Keycloak configuration from environment variables.
+// Ensure that the following variables are set:
+// KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET, KEYCLOAK_ENDPOINT_AUTH,
+// KEYCLOAK_ENDPOINT_TOKEN, KEYCLOAK_ENDPOINT_USERINFO, KEYCLOAK_SCOPES, and KEYCLOAK_IS_OPEN_ID.
+//
+// Note: Before deploying, configure your Keycloak client with the required mappers:
+// - GroupToRoleMapper (Token mapper, Group Membership, priority 0)
+// - User Realm Role (roles-mapper, priority 40)
+// Also, create and map the `statping-admin` role for admin groups in Keycloak.
+// This setup will include a 'roles' array with 'statping-admin' in the userinfo token.
+
 func InitKeycloakConfig() {
 	keycloakClientID := utils.Params.GetString("KEYCLOAK_CLIENT_ID")
 	keycloakClientSecret := utils.Params.GetString("KEYCLOAK_CLIENT_SECRET")
