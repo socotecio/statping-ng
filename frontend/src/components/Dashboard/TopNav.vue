@@ -1,6 +1,6 @@
 <template>
   <nav class="navbar navbar-expand-lg">
-     <router-link class="links button" to="/">{{$t('go_to_dashboard')}}</router-link>
+     <router-link class="links button" to="/">{{$t('go_to_status_page')}}</router-link>
       <button @click="navopen = !navopen" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
           <font-awesome-icon v-if="!navopen" icon="bars"/>
           <font-awesome-icon v-if="navopen" icon="times"/>
