@@ -222,7 +222,7 @@
 
   .lower_canvas SPAN {
     font-size: 1rem;
-    color: $expert-blue;
+    color: $service-description-color;
   }
 
   .font-0 {
@@ -374,21 +374,23 @@
   }
 
   .btn-success {
-    background-color: $meadow_green_light;
+    background-color: $success-color;
+    @include dynamic-color($success-color);
   }
 
   .btn-danger {
-    background-color: $cherry_red_light;
+    background-color: $danger-color;
+    @include dynamic-color($danger-color);
   }
 
   .bg-success {
-    background-color: $meadow_green_light !important;
+    background-color: $success-color !important;
     color: $meadow_green !important;
     border: 1px solid $meadow_green !important;
   }
 
   .bg-danger {
-    background-color: $cherry_red_light !important;
+    background-color: $danger-color !important;
     color: $cherry_red !important;
     border: 1px solid $cherry_red !important;
   }

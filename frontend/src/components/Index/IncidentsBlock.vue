@@ -47,7 +47,6 @@ export default {
         },
       async getIncidents() {
         this.incidents = await Api.incidents_service(this.service.id)
-        console.log("Incidents", this.incidents)
       },
       async incident_updates(incident) {
         return await Api.incident_updates(incident)
