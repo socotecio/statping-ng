@@ -8,7 +8,7 @@
       <transition name="fade">
         <div v-if="loaded">
         <div class="d-flex mt-3">
-            <div class="flex-fill service_day" v-for="(d, index) in failureData" @mouseover="mouseover(d)" @mouseout="mouseout" :class="{'day-error': d.amount > 0, 'day-success': d.amount === 0}">
+          <div class="flex-fill service_day" v-for="(d, index) in failureData" @mouseover="mouseover(d)" @mouseout="mouseout" :class="getBarClass(d)">
                 <span v-if="d.amount !== 0" class="d-none d-md-block text-center small"></span>
             </div>
         </div>
@@ -17,7 +17,7 @@
             <p class="divided">
               <span class="font-2 text-muted">90 {{$t('days_ago')}}</span>
               <span class="divider"></span>
-              <span class="text-center font-2" :class="{'text-muted': service.online, 'text-danger': !service.online}">{{service_txt}}</span>
+              <span class="text-center font-2" :class="textClass(service)">{{service_txt}}</span>
               <span class="divider"></span>
               <span class="font-2 text-muted">{{$t('today')}}</span>
             </p>
@@ -82,9 +82,28 @@ export default {
         const data = await Api.service_failures_data(this.service.id, this.toUnix(start), this.toUnix(end), "24h", true)
         data.forEach((d) => {
           let date = this.parseISO(d.timeframe)
-          this.failureData.push({month: date.getMonth(), day: date.getDate(), date: date, amount: d.amount})
+          this.failureData.push({
+            month: date.getMonth(),
+            day: date.getDate(),
+            date: date,
+            amount: d.amount,
+            outage_type: d.outage_type,
+          })
         })
-      }
+      },
+      // Returns a CSS class for the bar depending on the day's failure data.
+      // If an outage was recorded for that day:
+      // - 'Critical' returns 'day-error'
+      // - 'Minor' or 'Major' returns 'day-outage'
+      // Otherwise, it returns 'day-error' if there are failures, or 'day-success' if not.
+      getBarClass(dayData) {
+        if (dayData.outage_type === 'Critical') {
+          return 'day-error';
+        } else if (dayData.outage_type === 'Major' || dayData.outage_type === 'Minor') {
+          return 'day-outage';
+        }
+        return dayData.amount > 0 ? 'day-error' : 'day-success';
+      },
     }
 }
 </script>

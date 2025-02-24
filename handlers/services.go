@@ -101,7 +101,7 @@ func apiServicePatchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !req.Online {
-		services.RecordFailure(service, issueDefault, "trigger")
+		services.RecordFailure(service, issueDefault, "trigger", service.OutageType)
 	} else {
 		services.RecordSuccess(service)
 	}
@@ -129,6 +129,11 @@ func apiServiceUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	go service.CheckService(true)
+
+	if service.IsOutageEnabled {
+		services.RecordFailure(service, "Manual outage set ("+service.OutageType+")", "manual", service.OutageType)
+	}
+
 	sendJsonAction(service, "update", w, r)
 }
 
@@ -166,13 +171,23 @@ func apiServiceFailureDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	objs, err := groupQuery.GraphData(database.ByCount)
+	objs, err := groupQuery.GraphDataForFailures(database.ByCount)
 	if err != nil {
 		sendErrorJson(err, w, r)
 		return
 	}
 
-	returnJson(objs, w, r)
+	enriched := make([]interface{}, 0, len(objs))
+	for _, tv := range objs {
+		record := map[string]interface{}{
+			"timeframe":         tv.Timeframe,
+			"amount":            tv.Amount,
+			"outage_type":       tv.OutageType,
+		}
+		enriched = append(enriched, record)
+	}
+
+	returnJson(enriched, w, r) 
 }
 
 func apiServicePingDataHandler(w http.ResponseWriter, r *http.Request) {

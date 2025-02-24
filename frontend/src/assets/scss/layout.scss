@@ -1,5 +1,6 @@
 @import 'variables';
 @import 'mixin';
+@import 'custom';
 
 HTML,BODY {
   background-color: $background-color;
@@ -41,6 +42,10 @@ A {
   color: lighten($text-color, 30%) !important;
 }
 
+.text-outage {
+  color: $secondary_orange !important;
+}
+
 .day-success {
   background-color: $day-success-background;
 }
@@ -55,6 +60,14 @@ A {
 
 .day-error:HOVER {
   background-color: lighten($day-error-background, 2%) !important;
+}
+
+.day-outage {
+  background-color: $day-outage-background;
+}
+
+.day-outage:HOVER {
+  background-color: lighten($day-outage-background, 2%) !important;
 }
 
 .contain-card {
