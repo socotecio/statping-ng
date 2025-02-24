@@ -1,6 +1,6 @@
 <template>
     <div id="header">
-      <router-link class="links button position-absolute start-0" :to="isAdmin ? '/dashboard' : '/login'">{{$t('go_to_dashboard')}}</router-link>
+      <router-link class="links button position-absolute start-0" :to="isAdmin() ? '/dashboard' : '/login'">{{$t('go_to_dashboard')}}</router-link>
       <img alt="Socotec Login" class="d-block mx-auto embed-responsive logo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTciIGhlaWdodD0iNTciIHZpZXdCb3g9IjAgMCA1NyA1NyIgZmlsbD0ibm9u
       ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIzLjg5Njgg
       MzAuM0MxOS4zNzIxIDMwLjMgMTUuNjk2OCAyNi42MDIzIDE1LjY5NjggMjIuMDVDMTUuNjk2OCAx
@@ -118,6 +118,9 @@ export default {
     computed: {
       core() {
           return this.$store.getters.core
+      },
+      isAdmin() {
+        return this.$store.state.admin
       }
     }
 }

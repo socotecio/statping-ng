@@ -103,7 +103,7 @@ export default {
         },
     },
     async mounted() {
-        await this.checkLogin();
+        const result = await this.checkLogin();
         if (!result) {
           this.$router.push('/login')
         }
