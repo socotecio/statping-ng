@@ -105,7 +105,6 @@ func (b *GroupQuery) GraphDataForFailures(by By) ([]*TimeValue, error) {
         return nil, err
     }
 
-
     if b.FillEmpty {
         filled, err := caller.FillMissing(b.Start, b.End)
         if err != nil {
