@@ -146,6 +146,7 @@ export default {
             if (jwt.username) {
               this.$store.commit('setLoggedIn', true);
             }
+            return true
           } catch (e) {
             console.error(e)
           }
