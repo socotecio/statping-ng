@@ -91,17 +91,18 @@ func (b *GroupQuery) GraphData(by By) ([]*TimeValue, error) {
 func (b *GroupQuery) GraphDataForFailures(by By) ([]*TimeValue, error) {
     selectExpr := fmt.Sprintf(`%s, 
         CASE 
-            WHEN SUM(CASE WHEN outage_type = 'Critical' THEN 1 ELSE 0 END) > 0 THEN 'Critical'
-            WHEN SUM(CASE WHEN outage_type = 'Major' THEN 1 ELSE 0 END) > 0 THEN 'Major'
-            WHEN SUM(CASE WHEN outage_type = 'Minor' THEN 1 ELSE 0 END) > 0 THEN 'Minor'
+            WHEN SUM(CASE WHEN outage_type = 'critical' THEN 1 ELSE 0 END) > 0 THEN 'critical'
+            WHEN SUM(CASE WHEN outage_type = 'major' THEN 1 ELSE 0 END) > 0 THEN 'major'
+            WHEN SUM(CASE WHEN outage_type = 'minor' THEN 1 ELSE 0 END) > 0 THEN 'minor'
             ELSE ''
         END as outage_type`, by.String())
 
     b.db = b.db.MultipleSelects(b.db.SelectByTime(b.Group), selectExpr).Group("timeframe").Order("timeframe", true)
 
-    caller, err := b.ToTimeValueForFailures()	
+    caller, err := b.ToTimeValueForFailures()
 
     if err != nil {
+        log.Errorf("GraphDataForFailures: Error in query execution: %v", err)
         return nil, err
     }
 
@@ -148,13 +149,15 @@ func (b *GroupQuery) ToTimeValueForFailures() (*TimeVar, error) {
     if err != nil {
         return nil, err
     }
+    defer rows.Close()
+
     var data []*TimeValue
     for rows.Next() {
         var timeframe string
         var amount int64
-        var outageType string // <-- Déclaration de outageType
-        // Modifier rows.Scan pour inclure outage_type
-        if err := rows.Scan(&timeframe, &amount, &outageType); err != nil { // <-- rows.Scan avec 3 arguments
+        var outageType string
+
+        if err := rows.Scan(&timeframe, &amount, &outageType); err != nil {
             log.Errorln(err, timeframe)
         }
         trueTime, _ := b.db.ParseTime(timeframe)
@@ -163,43 +166,68 @@ func (b *GroupQuery) ToTimeValueForFailures() (*TimeVar, error) {
         tv := &TimeValue{
             Timeframe:  newTs,
             Amount:     amount,
-            OutageType: outageType, // <-- Assignation de outageType
+            OutageType: outageType,
         }
         data = append(data, tv)
     }
     return &TimeVar{b, data}, nil
 }
 
+// FillMissing fills missing time slots between current and end using aggregated data.
+// It aggregates multiple entries per day by summing their amounts and selecting the outage type
+// with the highest severity (Critical > Major > Minor > "").
 func (t *TimeVar) FillMissing(current, end time.Time) ([]*TimeValue, error) {
-	timeMap := make(map[string]*TimeValue)
+	// aggregated holds the sum and the highest severity outage type for a given timeframe.
+	type aggregated struct {
+		amount     int64
+		outageType string
+	}
+
+	// severityRank defines the relative severity of outage types.
+	severityRank := map[string]int{
+		"critical": 3,
+		"major":    2,
+		"minor":    1,
+		"":         0,
+	}
+
+	// Build a map of timeframe → aggregated data.
+	aggMap := make(map[string]aggregated)
 	for _, v := range t.data {
-		timeMap[v.Timeframe] = v
+		key := v.Timeframe
+		if existing, ok := aggMap[key]; ok {
+			// Sum the amounts.
+			newAmount := existing.amount + v.Amount
+			// Choose the outage type with the higher severity.
+			if severityRank[v.OutageType] > severityRank[existing.outageType] {
+				aggMap[key] = aggregated{amount: newAmount, outageType: v.OutageType}
+			} else {
+				aggMap[key] = aggregated{amount: newAmount, outageType: existing.outageType}
+			}
+		} else {
+			aggMap[key] = aggregated{amount: v.Amount, outageType: v.OutageType}
+		}
 	}
 
 	var validSet []*TimeValue
-	var lastOutageType string
-
+	// Iterate over each day from current to end.
 	for {
 		currentStr := types.FixedTime(current, t.g.Group)
-
-		var amount int64
-		var outageType string
-
-		if tv, ok := timeMap[currentStr]; ok {
-			amount = tv.Amount
-			outageType = tv.OutageType
-			if tv.OutageType != "" {
-				lastOutageType = tv.OutageType
-			}
+		if agg, ok := aggMap[currentStr]; ok {
+			validSet = append(validSet, &TimeValue{
+				Timeframe:  currentStr,
+				Amount:     agg.amount,
+				OutageType: agg.outageType,
+			})
 		} else {
-			outageType = lastOutageType
+			// No record for this day: fill with zero and no outage.
+			validSet = append(validSet, &TimeValue{
+				Timeframe:  currentStr,
+				Amount:     0,
+				OutageType: "",
+			})
 		}
 
-		validSet = append(validSet, &TimeValue{
-			Timeframe:  currentStr,
-			Amount:     amount,
-			OutageType: outageType,
-		})
 		current = current.Add(t.g.Group)
 		if current.After(end) {
 			break

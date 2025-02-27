@@ -259,9 +259,9 @@ export default Vue.mixin({
     },
     badgeClass(service) {
       if (service.is_outage_enabled) {
-        if (service.outage_type === 'Critical') {
+        if (service.outage_type === 'critical') {
           return 'bg-danger';
-        } else if (service.outage_type === 'Minor' || service.outage_type === 'Major') {
+        } else if (service.outage_type === 'minor' || service.outage_type === 'major') {
           return 'bg-outage';
         }
         return 'bg-outage';
@@ -270,9 +270,9 @@ export default Vue.mixin({
     },
     textClass(service) {
       if (service.is_outage_enabled) {
-        if (service.outage_type === 'Critical') {
+        if (service.outage_type === 'critical') {
           return 'text-danger';
-        } else if (service.outage_type === 'Minor' || service.outage_type === 'Major') {
+        } else if (service.outage_type === 'minor' || service.outage_type === 'major') {
           return 'text-outage';
         }
         return 'text-outage';
