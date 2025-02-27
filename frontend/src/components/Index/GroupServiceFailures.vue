@@ -95,17 +95,13 @@ export default {
             return 
           }
           
-          // Throw out data that is from the future (shouldn't happen, but good to check)
-          if ((this.toUnix(date) * 1000) > Date.now()) { 
-            return 
-          }
-          
           this.failureData.push({
             month: date.getMonth(),
             day: date.getDate(),
             date: date,
             amount: d.amount,
             outage_type: d.outage_type,
+            hits: d.hits || 0
             hits: d.hits || 0
           })
         })

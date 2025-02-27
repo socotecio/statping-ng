@@ -8,6 +8,7 @@ import (
 	"github.com/statping-ng/statping-ng/types/hits"
 	"github.com/statping-ng/statping-ng/types/services"
 	"github.com/statping-ng/statping-ng/utils"
+	"encoding/json"
 	"net/http"
 )
 
@@ -154,10 +155,17 @@ func apiServiceUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		sendErrorJson(err, w, r)
 		return
 	}
-	if err := DecodeJSON(r, &service); err != nil {
+
+	var updateData services.Service
+	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
 		sendErrorJson(err, w, r)
 		return
 	}
+
+	// Now copy each field (including false/empty ones) from updateData into service.
+	service.IsOutageEnabled = updateData.IsOutageEnabled
+	service.OutageType = updateData.OutageType
+
 	if err := service.Update(); err != nil {
 		sendErrorJson(err, w, r)
 		return

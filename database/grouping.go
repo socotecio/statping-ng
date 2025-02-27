@@ -94,17 +94,16 @@ func (b *GroupQuery) GraphDataForFailures(by By) ([]*TimeValue, error) {
             WHEN SUM(CASE WHEN outage_type = 'critical' THEN 1 ELSE 0 END) > 0 THEN 'critical'
             WHEN SUM(CASE WHEN outage_type = 'major' THEN 1 ELSE 0 END) > 0 THEN 'major'
             WHEN SUM(CASE WHEN outage_type = 'minor' THEN 1 ELSE 0 END) > 0 THEN 'minor'
-            WHEN SUM(CASE WHEN outage_type = 'critical' THEN 1 ELSE 0 END) > 0 THEN 'critical'
-            WHEN SUM(CASE WHEN outage_type = 'major' THEN 1 ELSE 0 END) > 0 THEN 'major'
-            WHEN SUM(CASE WHEN outage_type = 'minor' THEN 1 ELSE 0 END) > 0 THEN 'minor'
             ELSE ''
         END as outage_type`, by.String())
 
     b.db = b.db.MultipleSelects(b.db.SelectByTime(b.Group), selectExpr).Group("timeframe").Order("timeframe", true)
 
     caller, err := b.ToTimeValueForFailures()
+    caller, err := b.ToTimeValueForFailures()
 
     if err != nil {
+        log.Errorf("GraphDataForFailures: Error in query execution: %v", err)
         log.Errorf("GraphDataForFailures: Error in query execution: %v", err)
         return nil, err
     }
@@ -154,10 +153,15 @@ func (b *GroupQuery) ToTimeValueForFailures() (*TimeVar, error) {
     }
     defer rows.Close()
 
+    defer rows.Close()
+
     var data []*TimeValue
     for rows.Next() {
         var timeframe string
         var amount int64
+        var outageType string
+
+        if err := rows.Scan(&timeframe, &amount, &outageType); err != nil {
         var outageType string
 
         if err := rows.Scan(&timeframe, &amount, &outageType); err != nil {
@@ -171,57 +175,16 @@ func (b *GroupQuery) ToTimeValueForFailures() (*TimeVar, error) {
             Timeframe:  newTs,
             Amount:     amount,
             OutageType: outageType,
+            OutageType: outageType,
         }
         data = append(data, tv)
     }
     return &TimeVar{b, data}, nil
 }
 
-
-// FillMissing fills in missing time slots between the provided current and end times,
-// using aggregated data from t.data. For each time slot, the function aggregates any
-// available entries by summing their amounts and by selecting the outage type with the
-// highest severity. Severity is ranked as follows:
-//   "critical" > "major" > "minor" > "" (no outage)
-// 
-// The display color (for UI purposes) is derived from the aggregated result:
-//   - If no data is available for a time slot, the color is grey.
-//   - If data is available but the total failure amount is 0, the color is green.
-//   - If the highest severity is "minor" or "major", the color is orange.
-//   - If the highest severity is "critical", the color is red.
-//
-// The function returns a slice of pointers to TimeValue structs representing each
-// time slot from current until end. If no record exists for a time slot, the slot is
-// filled with an amount of 0 and an empty outage type.
-//
-// Examples (where the three columns represent, respectively, the color of individual
-// entries being aggregated, the color of the newly added entry, and the final aggregated
-// result color):
-//
-//   Input(s)           -> Aggregated Result (Display Color)
-//   -----------------------------------------------------------
-//   green - green      -> green   // (0 failure, and additional 0 → green)
-//   green - orange     -> orange  // (0 failure combined with a minor/major outage → orange)
-//   green - red        -> red     // (0 failure combined with a critical outage → red)
-//   [no data]          -> gray    // (no record for this time slot → gray)
-//
-// More generally:
-//
-//   Condition                          			| Outage Type       	| Display Color
-//   -----------------------------------------------|-----------------------|--------------
-//   No data                            			| N/A               	| Gray
-//   Data exists, total failures = 0    			| "" (empty)        	| Green
-//   Data exists, highest severity = minor/major 	| "minor" or "major" 	| Orange
-//   Data exists, highest severity = critical      	| "critical"       		| Red
-//
-// Args:
-//   current: The starting time of the interval to fill.
-//   end: The ending time of the interval to fill.
-//
-// Returns:
-//   A slice of pointers to TimeValue, one for each time slot, containing the
-//   aggregated amount and outage type (from which a display color can be derived),
-//   and an error if any occurred.
+// FillMissing fills missing time slots between current and end using aggregated data.
+// It aggregates multiple entries per day by summing their amounts and selecting the outage type
+// with the highest severity (Critical > Major > Minor > "").
 func (t *TimeVar) FillMissing(current, end time.Time) ([]*TimeValue, error) {
 	// aggregated holds the sum and the highest severity outage type for a given timeframe.
 	type aggregated struct {
@@ -230,7 +193,6 @@ func (t *TimeVar) FillMissing(current, end time.Time) ([]*TimeValue, error) {
 	}
 
 	// severityRank defines the relative severity of outage types.
-	// "critical" is the highest, followed by "major" and "minor".
 	severityRank := map[string]int{
 		"critical": 3,
 		"major":    2,
@@ -257,7 +219,7 @@ func (t *TimeVar) FillMissing(current, end time.Time) ([]*TimeValue, error) {
 	}
 
 	var validSet []*TimeValue
-	// Iterate over each time slot from current to end.
+	// Iterate over each day from current to end.
 	for {
 		currentStr := types.FixedTime(current, t.g.Group)
 		if agg, ok := aggMap[currentStr]; ok {
@@ -266,8 +228,14 @@ func (t *TimeVar) FillMissing(current, end time.Time) ([]*TimeValue, error) {
 				Amount:     agg.amount,
 				OutageType: agg.outageType,
 			})
+		if agg, ok := aggMap[currentStr]; ok {
+			validSet = append(validSet, &TimeValue{
+				Timeframe:  currentStr,
+				Amount:     agg.amount,
+				OutageType: agg.outageType,
+			})
 		} else {
-			// No record for this time slot: fill with zero amount and no outage type.
+			// No record for this day: fill with zero and no outage.
 			validSet = append(validSet, &TimeValue{
 				Timeframe:  currentStr,
 				Amount:     0,
