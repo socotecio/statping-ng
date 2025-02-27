@@ -290,7 +290,6 @@ func apiServiceDeleteHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func apiAllServicesHandler(r *http.Request) interface{} {
-	log.Info("apiAllServicesHandler")
 	var srvs []services.Service
 	for _, v := range services.AllInOrder() {
 		srvs = append(srvs, v)
