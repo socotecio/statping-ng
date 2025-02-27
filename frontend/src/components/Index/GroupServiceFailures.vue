@@ -95,6 +95,11 @@ export default {
             return 
           }
           
+          // Throw out data that is from the future (shouldn't happen, but good to check)
+          if ((this.toUnix(date) * 1000) > Date.now()) { 
+            return 
+          }
+          
           this.failureData.push({
             month: date.getMonth(),
             day: date.getDate(),
@@ -160,5 +165,6 @@ export default {
         }
       }
     }
+    
 }
 </script>

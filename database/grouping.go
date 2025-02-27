@@ -94,6 +94,9 @@ func (b *GroupQuery) GraphDataForFailures(by By) ([]*TimeValue, error) {
             WHEN SUM(CASE WHEN outage_type = 'critical' THEN 1 ELSE 0 END) > 0 THEN 'critical'
             WHEN SUM(CASE WHEN outage_type = 'major' THEN 1 ELSE 0 END) > 0 THEN 'major'
             WHEN SUM(CASE WHEN outage_type = 'minor' THEN 1 ELSE 0 END) > 0 THEN 'minor'
+            WHEN SUM(CASE WHEN outage_type = 'critical' THEN 1 ELSE 0 END) > 0 THEN 'critical'
+            WHEN SUM(CASE WHEN outage_type = 'major' THEN 1 ELSE 0 END) > 0 THEN 'major'
+            WHEN SUM(CASE WHEN outage_type = 'minor' THEN 1 ELSE 0 END) > 0 THEN 'minor'
             ELSE ''
         END as outage_type`, by.String())
 
@@ -151,10 +154,15 @@ func (b *GroupQuery) ToTimeValueForFailures() (*TimeVar, error) {
     }
     defer rows.Close()
 
+    defer rows.Close()
+
     var data []*TimeValue
     for rows.Next() {
         var timeframe string
         var amount int64
+        var outageType string
+
+        if err := rows.Scan(&timeframe, &amount, &outageType); err != nil {
         var outageType string
 
         if err := rows.Scan(&timeframe, &amount, &outageType); err != nil {
@@ -166,6 +174,7 @@ func (b *GroupQuery) ToTimeValueForFailures() (*TimeVar, error) {
         tv := &TimeValue{
             Timeframe:  newTs,
             Amount:     amount,
+            OutageType: outageType,
             OutageType: outageType,
         }
         data = append(data, tv)
