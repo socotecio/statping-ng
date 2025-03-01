@@ -139,7 +139,7 @@ func apiServiceUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	go service.CheckService(true)
 
 	if service.IsOutageEnabled {
-		services.RecordFailure(service, "Manual outage set ("+service.OutageType+")", "manual", service.OutageType)
+		services.RecordFailure(service, "Outage set ("+service.OutageType+")", "outage", service.OutageType)
 	}
 
 	sendJsonAction(service, "update", w, r)

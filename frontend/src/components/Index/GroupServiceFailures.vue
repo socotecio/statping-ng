@@ -77,6 +77,7 @@ export default {
       }
       this.hover_text = `${e.date.toLocaleDateString()} - ${txt}`
     },
+      // These two functions have been got in PR #1234 realised by @OstlerDev
       async lastDaysFailures() {
         const start = this.beginningOf('day', this.nowSubtract(86400 * 90))
         const end = this.endOf('tomorrow')
@@ -138,11 +139,11 @@ export default {
       // Otherwise, it returns 'day-error' if there are failures, or 'day-success' if not.
       getDayClass(dayData) {
         // No data points for day
-        if (dayData.amount === 0) {
+        if (data.amount === 0 && data.hits === 0) {
           return 'day-no-data';
         } 
         // No failures for day
-        else if (dayData.amount < 0) {
+        else if (data.amount === 0 && data.hits > 0) {
           return 'day-success';
         } 
         // Some failures for the day
