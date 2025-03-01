@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"encoding/json"
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/statping-ng/statping-ng/database"
 	"github.com/statping-ng/statping-ng/types/errors"
@@ -8,8 +11,6 @@ import (
 	"github.com/statping-ng/statping-ng/types/hits"
 	"github.com/statping-ng/statping-ng/types/services"
 	"github.com/statping-ng/statping-ng/utils"
-	"encoding/json"
-	"net/http"
 )
 
 type serviceOrder struct {
@@ -78,12 +79,12 @@ func apiCreateServiceHandler(w http.ResponseWriter, r *http.Request) {
 type servicePatchReq struct {
 	Online  bool   `json:"online"`
 	Issue   string `json:"issue,omitempty"`
-	Latency int64    `json:"latency,omitempty"`
+	Latency int64  `json:"latency,omitempty"`
 }
 
 type serviceOutagePatchReq struct {
-	IsOutageEnabled bool 	`json:"is_outage_enabled"`
-	OutageType 		string 	`json:"outage_type"`
+	IsOutageEnabled bool   `json:"is_outage_enabled"`
+	OutageType      string `json:"outage_type"`
 }
 
 func apiServicePatchHandler(w http.ResponseWriter, r *http.Request) {
@@ -171,6 +172,11 @@ func apiServiceUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	go service.CheckService(true)
+
+	if service.IsOutageEnabled {
+		services.RecordFailure(service, "Outage set ("+service.OutageType+")", "outage", service.OutageType)
+	}
+
 	sendJsonAction(service, "update", w, r)
 }
 
@@ -217,14 +223,14 @@ func apiServiceFailureDataHandler(w http.ResponseWriter, r *http.Request) {
 	enriched := make([]interface{}, 0, len(objs))
 	for _, tv := range objs {
 		record := map[string]interface{}{
-			"timeframe":         tv.Timeframe,
-			"amount":            tv.Amount,
-			"outage_type":       tv.OutageType,
+			"timeframe":   tv.Timeframe,
+			"amount":      tv.Amount,
+			"outage_type": tv.OutageType,
 		}
 		enriched = append(enriched, record)
 	}
 
-	returnJson(enriched, w, r) 
+	returnJson(enriched, w, r)
 }
 
 func apiServicePingDataHandler(w http.ResponseWriter, r *http.Request) {
