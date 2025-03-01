@@ -114,7 +114,8 @@ func start() {
 		exit(err)
 	}
 
-	InitKeycloakConfig()
+	// Use guard clause to initialize Keycloak configuration only if all variables are defined.
+	guardKeycloakInit()
 
 	if err := mainProcess(); err != nil {
 		exit(err)
@@ -171,17 +172,28 @@ func InitApp() error {
 	return nil
 }
 
+// guardKeycloakInit checks if all required Keycloak environment variables are set.
+// If any variable is missing, it logs a warning and skips Keycloak initialization.
+func guardKeycloakInit() {
+	if utils.Params.GetString("KEYCLOAK_CLIENT_ID") == "" ||
+		utils.Params.GetString("KEYCLOAK_CLIENT_SECRET") == "" ||
+		utils.Params.GetString("KEYCLOAK_ENDPOINT_AUTH") == "" ||
+		utils.Params.GetString("KEYCLOAK_ENDPOINT_TOKEN") == "" ||
+		utils.Params.GetString("KEYCLOAK_ENDPOINT_USERINFO") == "" ||
+		utils.Params.GetString("KEYCLOAK_SCOPES") == "" || {
+		log.Warn("Missing Keycloak environment variables. Skipping Keycloak initialization.")
+		return
+	}
+	// All required variables are set; proceed with Keycloak configuration.
+	InitKeycloakConfig()
+}
+
 // Initialize Keycloak configuration from environment variables.
-// Ensure that the following variables are set:
-// KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET, KEYCLOAK_ENDPOINT_AUTH,
-// KEYCLOAK_ENDPOINT_TOKEN, KEYCLOAK_ENDPOINT_USERINFO, KEYCLOAK_SCOPES, and KEYCLOAK_IS_OPEN_ID.
-//
 // Note: Before deploying, configure your Keycloak client with the required mappers:
-// - GroupToRoleMapper (Token mapper, Group Membership, priority 0)
-// - User Realm Role (roles-mapper, priority 40)
+// - GroupToRoleMapper (Token mapper, Group Membership)
+// - User Realm Role (roles-mapper, realm roles)
 // Also, create and map the `statping-admin` role for admin groups in Keycloak.
 // This setup will include a 'roles' array with 'statping-admin' in the userinfo token.
-
 func InitKeycloakConfig() {
 	keycloakClientID := utils.Params.GetString("KEYCLOAK_CLIENT_ID")
 	keycloakClientSecret := utils.Params.GetString("KEYCLOAK_CLIENT_SECRET")
@@ -192,50 +204,45 @@ func InitKeycloakConfig() {
 	keycloakIsOpenID := utils.Params.GetString("KEYCLOAK_IS_OPEN_ID")
 	domain := utils.Params.GetString("DOMAIN")
 
-	if keycloakClientID != "" && keycloakClientSecret != "" && keycloakEndpointAuth != "" && keycloakEndpointToken != "" && keycloakEndpointUserinfo != "" && keycloakScopes != "" {
-		core.App.OAuth.KeycloakClientID = keycloakClientID
-		core.App.OAuth.KeycloakClientSecret = keycloakClientSecret
-		core.App.OAuth.KeycloakEndpointAuth = keycloakEndpointAuth
-		core.App.OAuth.KeycloakEndpointToken = keycloakEndpointToken
-		core.App.OAuth.KeycloakEndpointUserinfo = keycloakEndpointUserinfo
-		core.App.OAuth.KeycloakScopes = keycloakScopes
-		core.App.Domain = domain
-		
-		// Convert the string value of KEYCLOAK_IS_OPEN_ID to a boolean
-		var isOpenID null.NullBool
-		if keycloakIsOpenID != "" {
-			parsedIsOpenID, err := strconv.ParseBool(keycloakIsOpenID)
-			if err != nil {
-				log.Errorf("Invalid value for KEYCLOAK_IS_OPEN_ID: %v", err)
-				isOpenID = null.NewNullBool(false)
-			} else {
-				isOpenID = null.NewNullBool(parsedIsOpenID)
-			}
-		} else {
-			isOpenID = null.NewNullBool(false)
-		}
-
-		core.App.OAuth.KeycloakIsOpenID = isOpenID
-		
-		coreInstance := &core.Core{
-			OAuth: core.App.OAuth,
-			Domain: core.App.Domain,
-		}
-
-		updates := map[string]interface{}{
-			"domain": coreInstance.Domain,
-			"keycloak_client_id": coreInstance.OAuth.KeycloakClientID,
-			"keycloak_client_secret": coreInstance.OAuth.KeycloakClientSecret,
-			"keycloak_endpoint_auth": coreInstance.OAuth.KeycloakEndpointAuth,
-			"keycloak_endpoint_token": coreInstance.OAuth.KeycloakEndpointToken,
-			"keycloak_endpoint_userinfo": coreInstance.OAuth.KeycloakEndpointUserinfo,
-			"keycloak_is_open_id": coreInstance.OAuth.KeycloakIsOpenID,
-			"keycloak_scopes": coreInstance.OAuth.KeycloakScopes,
-		}
-		
-		result := confgs.Db.Table("core").Model(&core.Core{}).Updates(updates)
-		log.Infof("Saving Keycloak data to the database: %v", result)		
-	} else {
-		log.Warn("Missing Keycloak environment variables.")
+	core.App.OAuth.KeycloakClientID = convertToBool(keycloakIsOpenID)
+	core.App.OAuth.KeycloakClientSecret = keycloakClientSecret
+	core.App.OAuth.KeycloakEndpointAuth = keycloakEndpointAuth
+	core.App.OAuth.KeycloakEndpointToken = keycloakEndpointToken
+	core.App.OAuth.KeycloakEndpointUserinfo = keycloakEndpointUserinfo
+	core.App.OAuth.KeycloakScopes = keycloakScopes
+	core.App.Domain = domain
+	
+	coreInstance := &core.Core{
+		OAuth: core.App.OAuth,
+		Domain: core.App.Domain,
 	}
+
+	updates := map[string]interface{}{
+		"domain": coreInstance.Domain,
+		"keycloak_client_id": coreInstance.OAuth.KeycloakClientID,
+		"keycloak_client_secret": coreInstance.OAuth.KeycloakClientSecret,
+		"keycloak_endpoint_auth": coreInstance.OAuth.KeycloakEndpointAuth,
+		"keycloak_endpoint_token": coreInstance.OAuth.KeycloakEndpointToken,
+		"keycloak_endpoint_userinfo": coreInstance.OAuth.KeycloakEndpointUserinfo,
+		"keycloak_is_open_id": coreInstance.OAuth.KeycloakIsOpenID,
+		"keycloak_scopes": coreInstance.OAuth.KeycloakScopes,
+	}
+	
+	result := confgs.Db.Table("core").Model(&core.Core{}).Updates(updates)
+	if result.Error != nil {
+		log.Errorf("Error saving Keycloak data to the database: %v", result.Error)
+	}
+	log.Infof("Keycloak configuration initialized.")
+}
+
+func convertToBool(stringToConvert string) {
+	if stringToConvert == "" {
+		return null.NewNullBool(false)
+	}
+	parsedString, err := strconv.ParseBool(stringToConvert)
+	if err {
+		log.Errorf("Invalid value for %s: %v", stringToConvert, err)
+		return null.NewNullBool(false)
+	}
+	return null.NewNullBool(parsedString)
 }
