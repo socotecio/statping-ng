@@ -184,20 +184,21 @@ export default new Vuex.Store({
     async loadCore(context) {
       try {
         const token = Api.token()
-        const core = await Api.core()
-        context.commit("setCore", core);
-        context.commit('setUser', token !== undefined);
         if (!token) {
           context.commit('setLoggedIn', false);
-          return
+          context.commit('setUser', false);
+          return;
         }
+        const core = await Api.core();
+        context.commit("setCore", core);
+        context.commit('setUser', true);
         try {
           const jwt = await Api.check_token(token)
           const oauth = await Api.oauth()
-          if (oauth) {
-            context.commit('setAdmin', jwt.admin);
+          if (jwt.oauth && oauth.admin) {
+            context.commit('setAdmin', oauth.admin);
           } else {
-            context.commit('setAdmin', token);
+            context.commit('setAdmin', jwt.admin);
           }
           if (jwt.username) {
             context.commit('setLoggedIn', true);
@@ -206,7 +207,7 @@ export default new Vuex.Store({
           console.error(e)
         }
       } catch (error) {
-        console.error("Erreur lors du chargement de Core :", error)
+        console.error("Error loading Core :", error)
       }
     },
     async loadRequired(context) {
