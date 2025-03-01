@@ -180,9 +180,9 @@ func guardKeycloakInit() {
 		utils.Params.GetString("KEYCLOAK_ENDPOINT_AUTH") == "" ||
 		utils.Params.GetString("KEYCLOAK_ENDPOINT_TOKEN") == "" ||
 		utils.Params.GetString("KEYCLOAK_ENDPOINT_USERINFO") == "" ||
-		utils.Params.GetString("KEYCLOAK_SCOPES") == "" || {
-		log.Warn("Missing Keycloak environment variables. Skipping Keycloak initialization.")
-		return
+		utils.Params.GetString("KEYCLOAK_SCOPES") == "" {
+			log.Warn("Missing Keycloak environment variables. Skipping Keycloak initialization.")
+			return
 	}
 	// All required variables are set; proceed with Keycloak configuration.
 	InitKeycloakConfig()
@@ -204,12 +204,13 @@ func InitKeycloakConfig() {
 	keycloakIsOpenID := utils.Params.GetString("KEYCLOAK_IS_OPEN_ID")
 	domain := utils.Params.GetString("DOMAIN")
 
-	core.App.OAuth.KeycloakClientID = convertToBool(keycloakIsOpenID)
+	core.App.OAuth.KeycloakClientID = keycloakClientID
 	core.App.OAuth.KeycloakClientSecret = keycloakClientSecret
 	core.App.OAuth.KeycloakEndpointAuth = keycloakEndpointAuth
 	core.App.OAuth.KeycloakEndpointToken = keycloakEndpointToken
 	core.App.OAuth.KeycloakEndpointUserinfo = keycloakEndpointUserinfo
 	core.App.OAuth.KeycloakScopes = keycloakScopes
+	core.App.OAuth.KeycloakIsOpenID = convertToBool(keycloakIsOpenID)
 	core.App.Domain = domain
 	
 	coreInstance := &core.Core{
@@ -235,14 +236,14 @@ func InitKeycloakConfig() {
 	log.Infof("Keycloak configuration initialized.")
 }
 
-func convertToBool(stringToConvert string) {
-	if stringToConvert == "" {
-		return null.NewNullBool(false)
-	}
-	parsedString, err := strconv.ParseBool(stringToConvert)
-	if err {
-		log.Errorf("Invalid value for %s: %v", stringToConvert, err)
-		return null.NewNullBool(false)
-	}
-	return null.NewNullBool(parsedString)
+func convertToBool(stringToConvert string) null.NullBool {
+    if stringToConvert == "" {
+        return null.NewNullBool(false)
+    }
+    parsedString, err := strconv.ParseBool(stringToConvert)
+    if err != nil {
+        log.Errorf("Invalid value for %s: %v", stringToConvert, err)
+        return null.NewNullBool(false)
+    }
+    return null.NewNullBool(parsedString)
 }
