@@ -184,14 +184,14 @@ export default new Vuex.Store({
     async loadCore(context) {
       try {
         const token = Api.token()
+        const core = await Api.core()
+        context.commit("setCore", core);
+        context.commit('setUser', true);
         if (!token) {
           context.commit('setLoggedIn', false);
           context.commit('setUser', false);
           return;
         }
-        const core = await Api.core();
-        context.commit("setCore", core);
-        context.commit('setUser', true);
         try {
           const jwt = await Api.check_token(token)
           const oauth = await Api.oauth()
