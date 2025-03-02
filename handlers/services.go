@@ -8,7 +8,7 @@ import (
 	"github.com/statping-ng/statping-ng/types/hits"
 	"github.com/statping-ng/statping-ng/types/services"
 	"github.com/statping-ng/statping-ng/utils"
-	"encoding/json"
+	"dario.cat/mergo"
 	"net/http"
 )
 
@@ -123,14 +123,16 @@ func apiServiceUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var updateData services.Service
-	if err := json.NewDecoder(r.Body).Decode(&updateData); err != nil {
+	if err := DecodeJSON(r, &updateData); err != nil {
 		sendErrorJson(err, w, r)
 		return
 	}
 
-	// Now copy each field (including false/empty ones) from updateData into service.
-	service.IsOutageEnabled = updateData.IsOutageEnabled
-	service.OutageType = updateData.OutageType
+	// Merge updateData in service by overriding the values
+	if err := mergo.Merge(service, updateData, mergo.WithOverride); err != nil {
+		sendErrorJson(err, w, r)
+		return
+	}
 
 	if err := service.Update(); err != nil {
 		sendErrorJson(err, w, r)
@@ -144,6 +146,7 @@ func apiServiceUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	sendJsonAction(service, "update", w, r)
 }
+
 
 func apiServiceDataHandler(w http.ResponseWriter, r *http.Request) {
 	service, err := findService(r)

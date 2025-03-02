@@ -35,6 +35,7 @@ require (
 
 require (
 	cloud.google.com/go v0.56.0 // indirect
+	dario.cat/mergo v1.0.1 // indirect
 	github.com/Azure/azure-sdk-for-go v41.3.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest v0.10.0 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.8.3 // indirect
