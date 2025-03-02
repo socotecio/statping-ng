@@ -144,11 +144,11 @@ export default {
       // Otherwise, it returns 'day-error' if there are failures, or 'day-success' if not.
       getDayClass(dayData) {
         // No data points for day
-        if (data.amount === 0 && data.hits === 0) {
+        if (dayData.amount === 0 && data.hits === 0) {
           return 'day-no-data';
         } 
         // No failures for day
-        else if (data.amount === 0 && data.hits > 0) {
+        else if (dayData.amount === 0 && data.hits > 0) {
           return 'day-success';
         } 
         // Some failures for the day
