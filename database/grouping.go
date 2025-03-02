@@ -159,6 +159,7 @@ func (b *GroupQuery) ToTimeValueForFailures() (*TimeVar, error) {
 
         if err := rows.Scan(&timeframe, &amount, &outageType); err != nil {
             log.Errorln(err, timeframe)
+            continue // ou return nil, err selon le comportement souhaité
         }
         trueTime, _ := b.db.ParseTime(timeframe)
         newTs := types.FixedTime(trueTime, b.Group)
@@ -170,8 +171,9 @@ func (b *GroupQuery) ToTimeValueForFailures() (*TimeVar, error) {
         }
         data = append(data, tv)
     }
-    return &TimeVar{b, data}, nil
+    return &TimeVar{g: b, data: data}, nil
 }
+
 
 // FillMissing fills in missing time slots between the provided current and end times,
 // using aggregated data from t.data. For each time slot, the function aggregates any
