@@ -8,7 +8,6 @@ import (
 	"github.com/statping-ng/statping-ng/types/hits"
 	"github.com/statping-ng/statping-ng/types/services"
 	"github.com/statping-ng/statping-ng/utils"
-	"dario.cat/mergo"
 	"net/http"
 )
 
@@ -78,7 +77,12 @@ func apiCreateServiceHandler(w http.ResponseWriter, r *http.Request) {
 type servicePatchReq struct {
 	Online  bool   `json:"online"`
 	Issue   string `json:"issue,omitempty"`
-	Latency int64  `json:"latency,omitempty"`
+	Latency int64    `json:"latency,omitempty"`
+}
+
+type serviceOutagePatchReq struct {
+	IsOutageEnabled bool 	`json:"is_outage_enabled"`
+	OutageType 		string 	`json:"outage_type"`
 }
 
 func apiServicePatchHandler(w http.ResponseWriter, r *http.Request) {
@@ -102,6 +106,37 @@ func apiServicePatchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !req.Online {
+		services.RecordFailure(service, issueDefault, "trigger", "offline")
+	} else {
+		services.RecordSuccess(service)
+	}
+
+	if err := service.Update(); err != nil {
+		sendErrorJson(err, w, r)
+		return
+	}
+
+	sendJsonAction(service, "update", w, r)
+}
+
+func apiServiceOutagePatchHandler(w http.ResponseWriter, r *http.Request) {
+	service, err := findService(r)
+	if err != nil {
+		sendErrorJson(err, w, r)
+		return
+	}
+	var req serviceOutagePatchReq
+	if err := DecodeJSON(r, &req); err != nil {
+		sendErrorJson(err, w, r)
+		return
+	}
+
+	service.IsOutageEnabled = req.IsOutageEnabled
+	service.OutageType = req.OutageType
+
+	issueDefault := "Service was triggered to be outaged"
+
+	if req.IsOutageEnabled {
 		services.RecordFailure(service, issueDefault, "trigger", service.OutageType)
 	} else {
 		services.RecordSuccess(service)
@@ -121,32 +156,17 @@ func apiServiceUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		sendErrorJson(err, w, r)
 		return
 	}
-
-	var updateData services.Service
-	if err := DecodeJSON(r, &updateData); err != nil {
+	if err := DecodeJSON(r, &service); err != nil {
 		sendErrorJson(err, w, r)
 		return
 	}
-
-	// Merge updateData in service by overriding the values
-	if err := mergo.Merge(service, updateData, mergo.WithOverride, mergo.WithOverwriteWithEmptyValue); err != nil {
-		sendErrorJson(err, w, r)
-		return
-	}
-
 	if err := service.Update(); err != nil {
 		sendErrorJson(err, w, r)
 		return
 	}
 	go service.CheckService(true)
-	log.Info("Service updated: ", service)
-	if service.IsOutageEnabled {
-		services.RecordFailure(service, "Outage set ("+service.OutageType+")", "outage", service.OutageType)
-	}
-
 	sendJsonAction(service, "update", w, r)
 }
-
 
 func apiServiceDataHandler(w http.ResponseWriter, r *http.Request) {
 	service, err := findService(r)
