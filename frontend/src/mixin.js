@@ -257,7 +257,7 @@ export default Vue.mixin({
     addSeconds(date, amount) {
       return addSeconds(date, amount)
     },
-    badgeClass(service) {
+    serviceBadgeClass(service) {
       if (service.is_outage_enabled) {
         if (service.outage_type === 'critical') {
           return 'bg-danger';

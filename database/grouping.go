@@ -174,7 +174,7 @@ func (b *GroupQuery) ToTimeValueForFailures() (*TimeVar, error) {
         }
         data = append(data, tv)
     }
-    return &TimeVar{g: b, data: data}, nil
+    return &TimeVar{b, data}, nil
 }
 
 

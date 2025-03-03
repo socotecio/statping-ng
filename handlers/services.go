@@ -129,7 +129,7 @@ func apiServiceUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Merge updateData in service by overriding the values
-	if err := mergo.Merge(service, updateData, mergo.WithOverride); err != nil {
+	if err := mergo.Merge(service, updateData, mergo.WithOverride, mergo.WithOverwriteWithEmptyValue); err != nil {
 		sendErrorJson(err, w, r)
 		return
 	}
@@ -139,7 +139,7 @@ func apiServiceUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	go service.CheckService(true)
-
+	log.Info("Service updated: ", service)
 	if service.IsOutageEnabled {
 		services.RecordFailure(service, "Outage set ("+service.OutageType+")", "outage", service.OutageType)
 	}
