@@ -258,7 +258,7 @@ export default Vue.mixin({
       return addSeconds(date, amount)
     },
     serviceBadgeClass(service) {
-      if (service.is_outage_enabled) {
+      if (service.outage_type != "none") {
         if (service.outage_type === 'critical') {
           return 'bg-danger';
         } else if (service.outage_type === 'minor' || service.outage_type === 'major') {
@@ -269,7 +269,7 @@ export default Vue.mixin({
       return service.online ? 'bg-success' : 'bg-danger';
     },
     textClass(service) {
-      if (service.is_outage_enabled) {
+      if (service.outage_type != "none") {
         if (service.outage_type === 'critical') {
           return 'text-danger';
         } else if (service.outage_type === 'minor' || service.outage_type === 'major') {

@@ -131,16 +131,14 @@ func apiServiceOutagePatchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	service.IsOutageEnabled = req.IsOutageEnabled
-	service.OutageType = req.OutageType
-
 	issueDefault := "Service was triggered to be outaged"
 
 	if req.IsOutageEnabled {
-		services.RecordFailure(service, issueDefault, "trigger", service.OutageType)
-	} else {
-		services.RecordSuccess(service)
+		services.RecordFailure(service, issueDefault, "trigger", req.OutageType)
 	}
+
+	service.IsOutageEnabled = req.IsOutageEnabled
+	service.OutageType = req.OutageType
 
 	if err := service.Update(); err != nil {
 		sendErrorJson(err, w, r)
