@@ -4,19 +4,22 @@ services:
 
   statping_dev:
     container_name: statping_dev
-    image: statping-ng/statping-ng:dev
+    build:
+      context: ../
+      dockerfile: dev/Dockerfile.dev
     restart: on-failure
     volumes:
-      - ./cmd:/go/src/github.com/statping-ng/statping-ng/cmd/
-      - ./core:/go/src/github.com/statping-ng/statping-ng/core/
-      - ./database:/go/src/github.com/statping-ng/statping-ng/database/
-      - ./dev:/go/src/github.com/statping-ng/statping-ng/dev/
-      - ./frontend:/go/src/github.com/statping-ng/statping-ng/frontend/
-      - ./handlers:/go/src/github.com/statping-ng/statping-ng/handlers/
-      - ./notifiers:/go/src/github.com/statping-ng/statping-ng/notifiers/
-      - ./source:/go/src/github.com/statping-ng/statping-ng/source/
-      - ./types:/go/src/github.com/statping-ng/statping-ng/types/
-      - ./utils:/go/src/github.com/statping-ng/statping-ng/utils/
+      - ../cmd:/go/src/github.com/statping-ng/statping-ng/cmd/
+      - ../core:/go/src/github.com/statping-ng/statping-ng/core/
+      - ../database:/go/src/github.com/statping-ng/statping-ng/database/
+      - ../dev:/go/src/github.com/statping-ng/statping-ng/dev/
+      - ../frontend:/go/src/github.com/statping-ng/statping-ng/frontend/
+      - ../handlers:/go/src/github.com/statping-ng/statping-ng/handlers/
+      - ../notifiers:/go/src/github.com/statping-ng/statping-ng/notifiers/
+      - ../source:/go/src/github.com/statping-ng/statping-ng/source/
+      - ../types:/go/src/github.com/statping-ng/statping-ng/types/
+      - ../utils:/go/src/github.com/statping-ng/statping-ng/utils/
+      - ../services.yml:/go/src/github.com/statping-ng/statping-ng/services.yml
     environment:
       DB_CONN: sqlite
       API_SECRET: exampleapisecret
@@ -26,6 +29,19 @@ services:
       ADMIN_USER: admin
       ADMIN_PASSWORD: admin
       PORT: 8585
+      DEBUG: "1"
+      LANGUAGE: "french"
+      READ_ONLY: "false"
+      DISABLE_COLORS: "false"
+      SAMPLE_DATA: "false"
+      STATPING_API_KEY: exampleapisecret
+      KEYCLOAK_CLIENT_ID: "${KEYCLOAK_CLIENT_ID}"
+      KEYCLOAK_CLIENT_SECRET: "${KEYCLOAK_CLIENT_SECRET}"
+      KEYCLOAK_ENDPOINT_AUTH: "${KEYCLOAK_ENDPOINT_AUTH}"
+      KEYCLOAK_ENDPOINT_TOKEN: "${KEYCLOAK_ENDPOINT_TOKEN}"
+      KEYCLOAK_ENDPOINT_USERINFO: "${KEYCLOAK_ENDPOINT_USERINFO}"
+      KEYCLOAK_SCOPES: openid,profile,email
+      KEYCLOAK_IS_OPEN_ID: "true"
     ports:
       - 8888:8888
       - 8585:8585
@@ -39,3 +55,5 @@ services:
 
 networks:
   statping:
+    external: true
+    name: dev_statping
