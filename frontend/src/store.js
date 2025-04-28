@@ -155,7 +155,7 @@ export default new Vuex.Store({
     setUser(state, user) {
       state.user = user
     },
-    setOauth(state, oauth) {
+    setOAuth(state, oauth) {
       state.oauth = oauth
     },
     setModal(state, modal) {
@@ -195,7 +195,7 @@ export default new Vuex.Store({
         try {
           const jwt = await Api.check_token(token)
           const oauth = await Api.oauth()
-          context.commit('setOauth', oauth);
+          context.commit('setOAuth', oauth);
           if (jwt.oauth && oauth.admin) {
             context.commit('setAdmin', oauth.admin);
           } else {
@@ -220,7 +220,7 @@ export default new Vuex.Store({
         const messages = await Api.messages()
         context.commit("setMessages", messages);
         const oauth = await Api.oauth()
-        context.commit("setOauth", oauth);
+        context.commit("setOAuth", oauth);
         context.commit("setHasPublicData", true);
       } catch (error) {
         console.error("Erreur lors du chargement des données requises :", error)
@@ -245,7 +245,7 @@ export default new Vuex.Store({
         const users = await Api.users()
         context.commit("setUsers", users);
         const oauth = await Api.oauth()
-        context.commit("setOauth", oauth);
+        context.commit("setOAuth", oauth);
       } catch (error) {
         console.error("Erreur lors du chargement des données admin :", error)
         context.commit('setLoadingGroupsError', error);
