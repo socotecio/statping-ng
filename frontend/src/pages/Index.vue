@@ -124,9 +124,6 @@ export default {
           const core = await Api.core();
           const oauth = await Api.oauth();
 
-          console.log("Core data:", core);
-          console.log("OAuth data:", oauth);
-
           if (!core || !oauth) {
             this.errorState = "Failed to load core or oauth configuration.";
             return;
