@@ -3,7 +3,13 @@
 
       <Header/>
 
-      <div v-if="loadingGroups || loadingServices || loadingMessages" class="row mt-5 mb-5">
+      <div v-if="errorState" class="row mt-5 mb-5">
+        <div class="col-12 text-center mt-3 mb-3">
+          <span class="text-danger font-weight-bold">⚠️ {{ errorState }}</span>
+        </div>
+      </div>
+
+      <div v-else-if="loadingGroups || loadingServices || loadingMessages" class="row mt-5 mb-5">
         <div class="col-12 mt-5 mb-2 text-center">
           <font-awesome-icon icon="circle-notch" class="text-dim" size="2x" spin/>
         </div>
@@ -23,16 +29,16 @@
               <MessageBlock v-for="message in messages" v-bind:key="message.id" :message="message" />
           </div>
 
-          <div class="col-12 full-col-12" v-if="services_no_group.length > 0">
+          <div class="col-12 full-col-12" v-if="services_no_group && services_no_group.length">
               <div v-for="service in services_no_group" v-bind:key="service.id" class="list-group online_list mb-4">
                   <div class="list-group-item list-group-item-action">
                       <router-link class="no-decoration font-3" :to="serviceLink(service)">
                           {{service.name}}
-                          <MessagesIcon :messages="service.messages"/>
+                          <MessagesIcon :messages="service.messages || {}"/>
                       </router-link>
                       <span class="badge float-right" :class="serviceBadgeClass(service)">{{service.online ? $t('online') : $t('offline')}}</span>
                       <GroupServiceFailures :service="service"/>
-                      <IncidentsBlock :service="service"/>
+                      <IncidentsBlock :service="service || {}"/>
                   </div>
               </div>
           </div>
@@ -75,7 +81,9 @@ export default {
             loadingGroups: true,
             loadingServices: true,
             loadingMessages: true,
-            messages: null // Initialize messages to null
+            loadingCore: true,
+            messages: null,
+            errorState: null
         };
     },
     computed: {
@@ -101,44 +109,83 @@ export default {
         core() {
             return this.$store.getters.core
         },
+        oauth() {
+          return this.$store.getters.oauth
+        }
     },
     async mounted() {
+      try {
         const result = await this.checkLogin();
         if (!result) {
-          this.$router.push('/login')
+          this.$cookies.remove("statping_auth");
+          try {
+            const core = await Api.core();
+            if (!core || !core.oauth) {
+              this.errorState = "Authentication is not configured properly.";
+              return;
+            }
+            
+            const oauthData = await Api.oauth();
+
+            if (oauthData && oauthData.keycloak_client_id) {
+              window.location = `${oauthData.keycloak_endpoint_auth}?client_id=${oauthData.keycloak_client_id}&redirect_uri=${encodeURI(this.core.domain + "/oauth/keycloak")}&response_type=code${this.keycloak_scopes(oauthData)}`;
+            }
+          } catch (error) {
+            console.error("Error loading OAuth data: ", error);
+            this.errorState = "An error occurred during the redirection process.";
+            return;
+          }
         }
 
-        try {
-          await this.$store.dispatch('loadGroups');
-        } catch (error) {
-          console.error("Error loading groups :", error);
-        } finally {
-          this.loadingGroups = false;
-        }
+        // Continue with loading store data
+        await this.loadAppData();
 
-        try {
-          await this.$store.dispatch('loadServices');
-        } catch (error) {
-          console.error("Error loading services :", error);
-        } finally {
-          this.loadingServices = false;
-        }
+      } catch (e) {
+        console.error("Error in mounted hook:", e);
+        this.errorState = "Unexpected error occurred during initialization.";
 
-        try {
-          await this.$store.dispatch('loadMessages');
-          this.messages = this.$store.getters.messages ? this.$store.getters.messages.filter(m => this.inRange(m) && m.service === 0) : null;
-        } catch (error) {
-          console.error("Error loading messages :", error);
-        } finally {
-          this.loadingMessages = false;
-        }
+        // Désactiver tous les loaders pour que l'erreur s'affiche proprement
+        this.loadingGroups = false;
+        this.loadingServices = false;
+        this.loadingMessages = false;
+      }
     },
-    methods: {
+      methods: {
+          async loadAppData() {
+            try {
+              await this.$store.dispatch('loadGroups');
+            } catch (error) {
+              console.error("Error loading groups :", error);
+              this.errorState = "An error occurred while loading groups.";
+            } finally {
+              this.loadingGroups = false;
+            }
+
+            try {
+              await this.$store.dispatch('loadServices');
+            } catch (error) {
+              console.error("Error loading services :", error);
+              this.errorState = "An error occurred while loading services.";
+            } finally {
+              this.loadingServices = false;
+            }
+
+            try {
+              await this.$store.dispatch('loadMessages');
+              this.messages = this.$store.getters.messages?.filter(m => this.inRange(m) && m.service === 0) ?? null;
+            } catch (error) {
+              console.error("Error loading messages :", error);
+              this.errorState = "An error occurred while loading messages.";
+            } finally {
+              this.loadingMessages = false;
+            }
+          },
+
         async checkLogin() {
           const token = this.$cookies.get('statping_auth')
           if (!token) {
             this.$store.commit('setLoggedIn', false);
-            return
+            return false
           }
           try {
             const jwt = await Api.check_token(token)
@@ -148,7 +195,7 @@ export default {
             }
             return true
           } catch (e) {
-            console.error(e)
+            this.errorState = "An error occurred during the login process."
           }
         },
         serviceLink(service) {
@@ -165,7 +212,28 @@ export default {
         },
         isBetween(value, min, max) {
             return value >= new Date(min) && value <= new Date(max);
-        }
+        },
+        keycloak_scopes(oauth) {
+          let scopes = [];
+
+          // Add openid scope if needed
+          if (oauth.keycloak_is_open_id && !scopes.includes("openid")) {
+              scopes.push("openid");
+          }
+
+          // Add other scopes
+          if (oauth.keycloak_scopes) {
+            oauth.keycloak_scopes.split(",").forEach(scope => {
+              const trimmedScope = scope.trim();
+              if (trimmedScope && !scopes.includes(trimmedScope)) {
+                scopes.push(trimmedScope);
+              }
+            });
+          }
+
+          // Return the scopes as a query string
+          return scopes.length > 0 ? `&scope=${scopes.join(" ")}` : "";
+        },
     }
 }
 </script>

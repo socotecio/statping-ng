@@ -195,6 +195,7 @@ export default new Vuex.Store({
         try {
           const jwt = await Api.check_token(token)
           const oauth = await Api.oauth()
+          context.commit('setOAuth', oauth);
           if (jwt.oauth && oauth.admin) {
             context.commit('setAdmin', oauth.admin);
           } else {
