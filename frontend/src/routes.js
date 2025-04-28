@@ -182,7 +182,7 @@ const routes = [
       title: 'Socio-Status - Login',
     }
   },
-  { path: '/logout', redirect: '/' },
+  { path: '/logout', redirect: '/login' },
   {
     path: '/service/:id',
     name: 'Service',

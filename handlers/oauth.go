@@ -2,13 +2,14 @@ package handlers
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/statping-ng/statping-ng/types/core"
 	"github.com/statping-ng/statping-ng/types/errors"
 	"github.com/statping-ng/statping-ng/types/null"
 	"github.com/statping-ng/statping-ng/types/users"
 	"golang.org/x/oauth2"
-	"net/http"
 )
 
 type oAuth struct {
@@ -59,5 +60,6 @@ func oauthLogin(oauth *oAuth, w http.ResponseWriter, r *http.Request) {
 	log.Infoln(fmt.Sprintf("OAuth %s User %s logged in from IP %s", oauth.Type(), oauth.Email, r.RemoteAddr))
 	setJwtToken(user, w)
 
-	http.Redirect(w, r, core.App.Domain+"/dashboard", http.StatusPermanentRedirect)
+	// Redirect to Index page after login
+	http.Redirect(w, r, core.App.Domain, http.StatusPermanentRedirect)
 }
