@@ -357,10 +357,10 @@ jobs:
           sudo apt-get install -y skopeo
 
       - name: Push Docker image to GitLab
+        env:
+          IMAGE_TAG: "${{ secrets.GITLAB_REGISTRY }}:${{ github.ref_name }}"
         run: |
           ls -l docker-image
-          export IMAGE_TAG="${{ secrets.GITLAB_REGISTRY }}:${{ github.ref_name }}"
-          echo "Image tag: $IMAGE_TAG"
 
           skopeo login --username "${{ secrets.GITLAB_USERNAME }}" --password "${{ secrets.GITLAB_TOKEN }}" "${{ secrets.GITLAB_REGISTRY }}"
 
