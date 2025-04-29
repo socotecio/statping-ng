@@ -123,19 +123,6 @@ jobs:
           echo "XGO_TAGS=netgo osusergo linux sqlite_omit_load_extension" >> $GITHUB_ENV
         shell: bash
 
-      - name: Set Darwin Build Flags
-        if: matrix.platform == 'darwin'
-        run: |
-          echo "XGO_TAGS=netgo osusergo darwin sqlite_omit_load_extension" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Set Windows Build Flags
-        if: matrix.platform == 'windows'
-        run: |
-          echo "BUILD_FLAGS=-extldflags -static -buildmode=exe" >> $GITHUB_ENV
-          echo "XGO_TAGS=netgo osusergo sqlite_omit_load_extension" >> $GITHUB_ENV
-        shell: bash
-
       - name: Build ${{ matrix.platform }}/${{ matrix.arch }}
         uses: crazy-max/ghaction-xgo@v2
         with:
@@ -164,26 +151,6 @@ jobs:
           rm -rf statping
           echo "compressed=statping-linux-${{ matrix.arch }}.tar.gz" >> $GITHUB_ENV
 
-      - name: Compress Windows Builds
-        if: matrix.platform == 'windows'
-        run: |
-          cd build
-          mv statping-windows-${{ matrix.arch }}.exe statping.exe
-          chmod +x statping.exe
-          zip statping-windows-${{ matrix.arch }}.zip statping.exe
-          rm -rf statping.exe
-          echo "compressed=statping-windows-${{ matrix.arch }}.zip" >> $GITHUB_ENV
-
-      - name: Compress Darwin Builds
-        if: matrix.platform == 'darwin'
-        run: |
-          cd build
-          mv statping-darwin-${{ matrix.arch }} statping
-          chmod +x statping
-          tar -czvf statping-darwin-${{ matrix.arch }}.tar.gz statping
-          rm -rf statping
-          echo "compressed=statping-darwin-${{ matrix.arch }}.tar.gz" >> $GITHUB_ENV
-
       - name: Upload Compiled Statping Binary
         uses: actions/upload-artifact@v4
         with:
@@ -207,15 +174,6 @@ jobs:
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ROOT_PASSWORD: password123
-          MYSQL_DATABASE: statping
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - uses: actions/checkout@v2
@@ -365,7 +323,7 @@ jobs:
   release:
     # only run release jobs on push to stable/unstable.
     if: ${{ success() && fromJSON(needs.data.outputs.is_release) }}
-    needs: [ data, build, test-postman-sqlite, test-postman-mysql, test-postman-postgres, docker-build ]
+    needs: [ data, build, test-postman-postgres, docker-build ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
