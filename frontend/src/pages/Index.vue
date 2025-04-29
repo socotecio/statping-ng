@@ -115,36 +115,37 @@ export default {
     },
     async mounted() {
       try {
-        const result = await this.checkLogin();
-        if (!result) {
-          this.$cookies.remove("statping_auth");
-          try {
-            const core = await Api.core();
-            if (!core || !core.oauth) {
-              this.errorState = "Authentication is not configured properly.";
-              return;
-            }
-            
-            const oauthData = await Api.oauth();
+        const isLoggedIn = await this.checkLogin();
 
-            if (oauthData && oauthData.keycloak_client_id) {
-              window.location = `${oauthData.keycloak_endpoint_auth}?client_id=${oauthData.keycloak_client_id}&redirect_uri=${encodeURI(this.core.domain + "/oauth/keycloak")}&response_type=code${this.keycloak_scopes(oauthData)}`;
-            }
-          } catch (error) {
-            console.error("Error loading OAuth data: ", error);
-            this.errorState = "An error occurred during the redirection process.";
+        if (!isLoggedIn) {
+          this.$cookies.remove("statping_auth");
+
+          // Load Core + OAuth
+          const core = await Api.core();
+          const oauth = await Api.oauth();
+
+          if (!core || !oauth) {
+            this.errorState = "Failed to load core or oauth configuration.";
             return;
           }
-        }
 
-        // Continue with loading store data
+          this.$store.commit('setCore', core);
+          this.$store.commit('setOauth', oauth);
+
+          // Keyckoak redirection
+          if (oauth.keycloak_client_id) {
+            const redirectUri = encodeURIComponent(core.domain + "/oauth/keycloak");
+            window.location.href = `${oauth.keycloak_endpoint_auth}?client_id=${oauth.keycloak_client_id}&redirect_uri=${redirectUri}&response_type=code${this.keycloak_scopes(oauth)}`;
+            return;
+          }
+
+          return;
+        }
         await this.loadAppData();
 
       } catch (e) {
         console.error("Error in mounted hook:", e);
         this.errorState = "Unexpected error occurred during initialization.";
-
-        // Désactiver tous les loaders pour que l'erreur s'affiche proprement
         this.loadingGroups = false;
         this.loadingServices = false;
         this.loadingMessages = false;
@@ -195,7 +196,9 @@ export default {
             }
             return true
           } catch (e) {
+            console.error("Error during login check:", e);
             this.errorState = "An error occurred during the login process."
+            return false;
           }
         },
         serviceLink(service) {

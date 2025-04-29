@@ -59,7 +59,8 @@
           this.$store.commit('setHasAllData', false)
           this.$store.commit('setToken', null)
           this.$store.commit('setAdmin', false)
-          // this.$cookies.remove("statping_auth")
+          this.$store.commit('setLoggedin', false)
+          this.$cookies.remove("statping_auth")
           await this.$router.push('/logout')
         }
     }
