@@ -366,4 +366,4 @@ jobs:
       
           skopeo login --username "${{ secrets.GITLAB_USERNAME }}" --password "${{ secrets.GITLAB_TOKEN }}" "${{ secrets.GITLAB_REGISTRY }}"
 
-          skopeo copy --all --format v2s2 oci-archive:docker-image/image.tar "docker://$IMAGE_TAG"
+          skopeo copy --all --format v2s2 --remove-signatures oci-archive:docker-image/image.tar "docker://$IMAGE_TAG"
