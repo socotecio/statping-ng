@@ -330,8 +330,10 @@ jobs:
         with:
           pattern: binaries-*
           path: binaries
+
       - name: list files
         run: find .
+
       - uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
@@ -340,10 +342,28 @@ jobs:
           draft: true
           generateReleaseNotes: true
           omitBodyDuringUpdate: true
-          prerelease: ${{ fromJSON(needs.data.outputs.is_prerelease) && 'true' || 'false'}}
+          prerelease: ${{ fromJSON(needs.data.outputs.is_prerelease) && 'true' || 'false' }}
           updateOnlyUnreleased: true
-      - name: push docker images
-        uses: jemand771/push-docker-artifact@main
+
+      - name: Download Docker artifact
+        uses: actions/download-artifact@v4
         with:
-          GITHUB_TOKEN: ${{ github.token }}
-      # TODO bring back dockerhub image
+          name: docker-images
+          path: docker-image
+
+      - name: Install skopeo
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y skopeo
+
+      - name: Push Docker image to GitLab
+        env:
+          IMAGE_TAG: "${{ secrets.GITLAB_REGISTRY }}/statping-ng:${{ github.ref_name }}"
+        run: |
+          ls -l docker-image
+
+          echo "Image tag: $IMAGE_TAG"
+
+          skopeo login --username "${{ secrets.GITLAB_USERNAME }}" --password "${{ secrets.GITLAB_TOKEN }}" "${{ secrets.GITLAB_REGISTRY }}"
+
+          skopeo copy --remove-signatures --format v2s2 oci-archive:docker-image/image.tar "docker://$IMAGE_TAG"
